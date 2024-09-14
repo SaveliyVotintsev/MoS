@@ -1,66 +1,80 @@
 ﻿@page "/"
 
-<h3>Calculation Form</h3>
+<h3>Форма расчета</h3>
 
 <div>
-    <label>K1: </label>
-    <input @bind="k1" type="number" />
+    <label>K11: </label>
+    <input @bind="k11" type="number" />
 </div>
-
 <div>
-    <label>K2: </label>
-    <input @bind="k2" type="number" />
+    <label>K21: </label>
+    <input @bind="k21" type="number" />
 </div>
-
 <div>
-    <label>K3: </label>
-    <input @bind="k3" type="number" />
+    <label>K31: </label>
+    <input @bind="k31" type="number" />
 </div>
-
 <div>
-    <label>K4: </label>
-    <input @bind="k4" type="number" />
+    <label>K41: </label>
+    <input @bind="k41" type="number" />
 </div>
-
 <div>
-    <label>K5: </label>
-    <input @bind="k5" type="number" />
+    <label>K51: </label>
+    <input @bind="k51" type="number" />
 </div>
-
 <div>
-    <label>T3: </label>
-    <input @bind="T3" type="number" />
+    <label>T31: </label>
+    <input @bind="T31" type="number" />
 </div>
-
 <div>
-    <label>T4: </label>
-    <input @bind="T4" type="number" />
+    <label>T41: </label>
+    <input @bind="T41" type="number" />
 </div>
 
-<div>
-    <label>Variant: </label>
-    <input @bind="variant" type="text" />
-</div>
+@if (Variants is { Count: > 0 })
+{
+    <div>
+        <label for="variant">Выберите вариант:</label>
+        <select id="variant" @bind="variant">
+            <option value="-1">Ручной</option>
+            @foreach (int key in Variants.Keys)
+            {
+                <option value="@key">Вариант @key</option>
+            }
+        </select>
+    </div>
+}
+else
+{
+    <p>Нет загруженных вариантов.</p>
+}
 
-<button @onclick="Submit">Calculate</button>
+<button @onclick="Submit">Рассчитать</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div style="color:red;">
+        <p>@errorMessage</p>
+    </div>
+}
 
 @if (ResultsAvailable)
 {
-    <h3>Results:</h3>
+    <h3>Результаты:</h3>
     <p>B0: @b0</p>
     <p>A0: @a0</p>
     <p>A1: @a1</p>
     <p>A2: @a2</p>
     <p>A3: @a3</p>
 
-    <h4>Roots:</h4>
+    <h4>Корни:</h4>
 
     foreach (string root in Roots)
     {
         <p>@root</p>
     }
 
-    <h4>Derivatives:</h4>
+    <h4>Производные:</h4>
 
     foreach (string derivative in Derivatives)
     {
@@ -74,10 +88,64 @@
         <p>@h</p>
     }
 
-    <h4>EH values:</h4>
+    <h4>Значения EH:</h4>
 
     foreach (string e in eh)
     {
         <p>@e</p>
     }
+}
+
+<h3>Загруженные варианты</h3>
+
+@if (Variants is { Count: > 0 })
+{
+    <button @onclick="ToggleVariantsTable">@(_isTableExpanded ? "Свернуть" : "Развернуть")</button>
+
+    @if (_isTableExpanded)
+    {
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Вариант</th >
+                <th>K11</th>
+                <th>K21</th>
+                <th>K31</th>
+                <th>K41</th>
+                <th>K51</th>
+                <th>T31</th>
+                <th>T41</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (KeyValuePair<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)> variant in Variants)
+            {
+                <tr>
+                    <td>@variant.Key</td>
+                    <td>@variant.Value.k11</td>
+                    <td>@variant.Value.k21</td>
+                    <td>@variant.Value.k31</td>
+                    <td>@variant.Value.k41</td>
+                    <td>@variant.Value.k51</td>
+                    <td>@variant.Value.T31</td>
+                    <td>@variant.Value.T41</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+else
+{
+    <p>Нет загруженных вариантов.</p>
+}
+
+@code {
+    private bool _isTableExpanded;
+
+    private void ToggleVariantsTable()
+    {
+        _isTableExpanded = !_isTableExpanded;
+    }
+
 }

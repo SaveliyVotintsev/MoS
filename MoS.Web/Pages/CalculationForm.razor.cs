@@ -17,18 +17,19 @@ public partial class CalculationForm
     private string[] hBezEList;
     private string[] eh;
     private bool ResultsAvailable;
-    private Dictionary<int, (double k1, double k2, double k3, double k4, double k5, double T3, double T4)> Variants;
+    private Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)> Variants;
+    private string? errorMessage;
 
     [Inject]
     public HttpClient Http { get; set; }
 
-    private double k1 { get; set; }
-    private double k2 { get; set; }
-    private double k3 { get; set; }
-    private double k4 { get; set; }
-    private double k5 { get; set; }
-    private double T3 { get; set; }
-    private double T4 { get; set; }
+    private double k11 { get; set; }
+    private double k21 { get; set; }
+    private double k31 { get; set; }
+    private double k41 { get; set; }
+    private double k51 { get; set; }
+    private double T31 { get; set; }
+    private double T41 { get; set; }
     private string variant { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -42,8 +43,8 @@ public partial class CalculationForm
         {
             string fileContent = await Http.GetStringAsync("variants.txt");
 
-            Variants = new Dictionary<int, (double k1, double k2, double k3, double k4, double k5, double T3, double T4)>();
-            string[] lines = fileContent.Split('\n');
+            Variants = new Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)>();
+            string[] lines = fileContent.Split("\r\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             foreach (string line in lines)
             {
@@ -71,57 +72,66 @@ public partial class CalculationForm
 
     private void Submit()
     {
-        if (!string.IsNullOrEmpty(variant))
+        try
         {
-            if (Variants.TryGetValue(int.Parse(variant), out (double k1, double k2, double k3, double k4, double k5, double T3, double T4) values))
+            if (!string.IsNullOrEmpty(variant))
             {
-                k1 = values.k1;
-                k2 = values.k2;
-                k3 = values.k3;
-                k4 = values.k4;
-                k5 = values.k5;
-                T3 = values.T3;
-                T4 = values.T4;
+                if (Variants.TryGetValue(int.Parse(variant), out (double k11, double k21, double k31, double k41, double k51, double T31, double T41) values))
+                {
+                    k11 = values.k11;
+                    k21 = values.k21;
+                    k31 = values.k31;
+                    k41 = values.k41;
+                    k51 = values.k51;
+                    T31 = values.T31;
+                    T41 = values.T41;
+                }
             }
+
+            a0 = k11 * k21 * k31 * k41 / (T31 * T41);
+            a1 = (1 + k31 * k51) / (T31 * T41);
+            a2 = (T41 * (k31 * k51 + 1) + T31) / (T31 * T41);
+            a3 = 1;
+            b0 = a0;
+
+            Polynomial polynomial = new(a0, a1, a2, a3);
+            Complex[] p = polynomial.Roots();
+
+            Roots = p.Select(root => ComplexFormatter.FormatComplex(root)).ToArray();
+
+            Complex[] A = new Complex[p.Length];
+
+            for (int i = 0; i < p.Length; i++)
+            {
+                A[i] = PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1);
+            }
+
+            Derivatives = A.Select(a => ComplexFormatter.ToE(a)).ToArray();
+
+            Complex[] hBezEListArray = new Complex[p.Length];
+
+            for (int i = 0; i < p.Length; i++)
+            {
+                hBezEListArray[i] = PolynomialDerivative.HBezE(b0, p[i], PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1));
+            }
+
+            hBezEList = hBezEListArray.Select(h => h.ToString()).ToArray();
+
+            eh = new string[p.Length - 1];
+
+            for (int i = 0; i < p.Length - 1; i++)
+            {
+                eh[i] = ComplexFormatter.ToEH(hBezEListArray[i], p[i]);
+            }
+
+            ResultsAvailable = true;
+            errorMessage = null;
         }
-
-        a0 = k1 * k2 * k3 * k4 / (T3 * T4);
-        a1 = (1 + k3 * k5) / (T3 * T4);
-        a2 = (T4 * (k3 * k5 + 1) + T3) / (T3 * T4);
-        a3 = 1;
-        b0 = a0;
-
-        Polynomial polynomial = new(a0, a1, a2, a3);
-        Complex[] p = polynomial.Roots();
-
-        Roots = p.Select(root => ComplexFormatter.FormatComplex(root)).ToArray();
-
-        Complex[] A = new Complex[p.Length];
-
-        for (int i = 0; i < p.Length; i++)
+        catch (Exception ex)
         {
-            A[i] = PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1);
+            ResultsAvailable = false;
+            errorMessage = $"Ошибка при расчете: {ex.Message}";
         }
-
-        Derivatives = A.Select(a => ComplexFormatter.ToE(a)).ToArray();
-
-        Complex[] hBezEListArray = new Complex[p.Length];
-
-        for (int i = 0; i < p.Length; i++)
-        {
-            hBezEListArray[i] = PolynomialDerivative.HBezE(b0, p[i], PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1));
-        }
-
-        hBezEList = hBezEListArray.Select(h => h.ToString()).ToArray();
-
-        eh = new string[p.Length - 1];
-
-        for (int i = 0; i < p.Length - 1; i++)
-        {
-            eh[i] = ComplexFormatter.ToEH(hBezEListArray[i], p[i]);
-        }
-
-        ResultsAvailable = true;
     }
 
     public static class ComplexFormatter
