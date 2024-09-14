@@ -1,0 +1,83 @@
+﻿@page "/"
+
+<h3>Calculation Form</h3>
+
+<div>
+    <label>K1: </label>
+    <input @bind="k1" type="number" />
+</div>
+
+<div>
+    <label>K2: </label>
+    <input @bind="k2" type="number" />
+</div>
+
+<div>
+    <label>K3: </label>
+    <input @bind="k3" type="number" />
+</div>
+
+<div>
+    <label>K4: </label>
+    <input @bind="k4" type="number" />
+</div>
+
+<div>
+    <label>K5: </label>
+    <input @bind="k5" type="number" />
+</div>
+
+<div>
+    <label>T3: </label>
+    <input @bind="T3" type="number" />
+</div>
+
+<div>
+    <label>T4: </label>
+    <input @bind="T4" type="number" />
+</div>
+
+<div>
+    <label>Variant: </label>
+    <input @bind="variant" type="text" />
+</div>
+
+<button @onclick="Submit">Calculate</button>
+
+@if (ResultsAvailable)
+{
+    <h3>Results:</h3>
+    <p>B0: @b0</p>
+    <p>A0: @a0</p>
+    <p>A1: @a1</p>
+    <p>A2: @a2</p>
+    <p>A3: @a3</p>
+
+    <h4>Roots:</h4>
+
+    foreach (string root in Roots)
+    {
+        <p>@root</p>
+    }
+
+    <h4>Derivatives:</h4>
+
+    foreach (string derivative in Derivatives)
+    {
+        <p>@derivative</p>
+    }
+
+    <h4>hBezEList:</h4>
+
+    foreach (string h in hBezEList)
+    {
+        <p>@h</p>
+    }
+
+    <h4>EH values:</h4>
+
+    foreach (string e in eh)
+    {
+        <p>@e</p>
+    }
+}
