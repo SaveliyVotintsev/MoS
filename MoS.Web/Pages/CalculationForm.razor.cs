@@ -23,6 +23,9 @@ public partial class CalculationForm
     [Inject]
     public HttpClient Http { get; set; }
 
+    [Inject]
+    public ILogger<CalculationForm> _logger { get; set; }
+
     private double k11 { get; set; }
     private double k21 { get; set; }
     private double k31 { get; set; }
@@ -41,17 +44,29 @@ public partial class CalculationForm
     {
         try
         {
-            string fileContent = await Http.GetStringAsync("variants.txt");
+            _logger.LogTrace("Начало загрузки вариантов");
 
+            _logger.LogTrace("Попытка получить содержимое файла 'variants.txt'");
+            string fileContent = await Http.GetStringAsync("variants.txt");
+            _logger.LogTrace("Содержимое файла успешно получено");
+
+            _logger.LogTrace("Инициализация словаря Variants");
             Variants = new Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)>();
-            string[] lines = fileContent.Split("\r\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            _logger.LogTrace("Разделение содержимого файла на строки");
+            string[] lines = fileContent.Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            _logger.LogTrace("Обработка каждой строки");
 
             foreach (string line in lines)
             {
+                _logger.LogTrace("Обработка строки: {Line}", line);
                 string[] parts = line.Split(' ');
 
                 if (parts.Length == 8 && int.TryParse(parts[0], out int key))
                 {
+                    _logger.LogTrace("Парсинг частей для ключа: {Key}", key);
+
                     Variants[key] = (
                         double.Parse(parts[1], CultureInfo.InvariantCulture),
                         double.Parse(parts[2], CultureInfo.InvariantCulture),
@@ -61,12 +76,20 @@ public partial class CalculationForm
                         double.Parse(parts[6], CultureInfo.InvariantCulture),
                         double.Parse(parts[7], CultureInfo.InvariantCulture)
                     );
+
+                    _logger.LogTrace("Успешно добавлен вариант для ключа: {Key}", key);
+                }
+                else
+                {
+                    _logger.LogTrace("Строка не содержит корректных данных или имеет неправильный формат: {Line}", line);
                 }
             }
+
+            _logger.LogTrace("Варианты успешно загружены");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading variants: {ex.Message}");
+            _logger.LogError(ex, "Ошибка при загрузке вариантов");
         }
     }
 

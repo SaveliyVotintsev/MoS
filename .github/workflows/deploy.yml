@@ -36,3 +36,4 @@ jobs:
         with:
           folder: 'dist/Web/wwwroot'
           branch: 'gh-pages'
+          single-commit: true
