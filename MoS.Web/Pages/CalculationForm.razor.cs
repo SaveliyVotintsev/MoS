@@ -1,222 +1,71 @@
-﻿using System.Globalization;
-using System.Numerics;
+﻿using System.Numerics;
 using MathNet.Numerics;
-using Microsoft.AspNetCore.Components;
+using MoS.Web.Components;
+using MoS.Web.Models;
 
 namespace MoS.Web.Pages;
 
 public partial class CalculationForm
 {
-    private readonly int _decimals = 6;
-    private double b0;
-    private double a0;
-    private double a1;
-    private double a2;
-    private double a3;
-    private string[] Roots;
-    private string[] Derivatives;
-    private string[] hBezEList;
-    private string[] eh;
-    private bool ResultsAvailable;
-    private Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)> Variants;
-    private string? errorMessage;
-    private string result;
+    private const int Decimals = 6;
 
-    [Inject]
-    public HttpClient Http { get; set; }
+    private CalculateData? _calculateData;
+    private CalculateResult? _calculateResult;
 
-    [Inject]
-    public ILogger<CalculationForm> _logger { get; set; }
-
-    private double k11 { get; set; }
-    private double k21 { get; set; }
-    private double k31 { get; set; }
-    private double k41 { get; set; }
-    private double k51 { get; set; }
-    private double T31 { get; set; }
-    private double T41 { get; set; }
-    private string variant { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadVariantsAsync();
-    }
-
-    private async Task LoadVariantsAsync()
-    {
-        try
-        {
-            _logger.LogTrace("Начало загрузки вариантов");
-
-            _logger.LogTrace("Попытка получить содержимое файла 'variants.txt'");
-            string fileContent = await Http.GetStringAsync("variants.txt");
-            _logger.LogTrace("Содержимое файла успешно получено");
-
-            _logger.LogTrace("Инициализация словаря Variants");
-            Variants = new Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)>();
-
-            _logger.LogTrace("Разделение содержимого файла на строки");
-            string[] lines = fileContent.Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-            _logger.LogTrace("Обработка каждой строки");
-
-            foreach (string line in lines)
-            {
-                _logger.LogTrace("Обработка строки: {Line}", line);
-                string[] parts = line.Split(' ');
-
-                if (parts.Length == 8 && int.TryParse(parts[0], out int key))
-                {
-                    _logger.LogTrace("Парсинг частей для ключа: {Key}", key);
-
-                    Variants[key] = (
-                        double.Parse(parts[1], CultureInfo.InvariantCulture),
-                        double.Parse(parts[2], CultureInfo.InvariantCulture),
-                        double.Parse(parts[3], CultureInfo.InvariantCulture),
-                        double.Parse(parts[4], CultureInfo.InvariantCulture),
-                        double.Parse(parts[5], CultureInfo.InvariantCulture),
-                        double.Parse(parts[6], CultureInfo.InvariantCulture),
-                        double.Parse(parts[7], CultureInfo.InvariantCulture)
-                    );
-
-                    _logger.LogTrace("Успешно добавлен вариант для ключа: {Key}", key);
-                }
-                else
-                {
-                    _logger.LogTrace("Строка не содержит корректных данных или имеет неправильный формат: {Line}", line);
-                }
-            }
-
-            _logger.LogTrace("Варианты успешно загружены");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при загрузке вариантов");
-        }
-    }
+    private bool _resultsAvailable;
+    private string? _errorMessage;
+    private InputForm? _inputForm;
 
     private void Submit()
     {
         try
         {
-            if (!string.IsNullOrEmpty(variant))
-            {
-                if (Variants.TryGetValue(int.Parse(variant), out (double k11, double k21, double k31, double k41, double k51, double T31, double T41) values))
-                {
-                    k11 = values.k11;
-                    k21 = values.k21;
-                    k31 = values.k31;
-                    k41 = values.k41;
-                    k51 = values.k51;
-                    T31 = values.T31;
-                    T41 = values.T41;
-                }
-            }
-
-            a0 = k11 * k21 * k31 * k41 / (T31 * T41);
-            a1 = (1 + k31 * k51) / (T31 * T41);
-            a2 = (T41 * (k31 * k51 + 1) + T31) / (T31 * T41);
-            a3 = 1;
-            b0 = a0;
-
-            Polynomial polynomial = new(a0, a1, a2, a3);
-            Complex[] p = polynomial.Roots();
-
-            Roots = p.Select(root => ComplexFormatter.FormatComplex(root)).ToArray();
-
-            Complex[] A = new Complex[p.Length];
-
-            for (int i = 0; i < p.Length; i++)
-            {
-                A[i] = PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1);
-            }
-
-            Derivatives = A.Select(a => ComplexFormatter.ToE(a)).ToArray();
-
-            Complex[] hBezEListArray = new Complex[p.Length];
-
-            for (int i = 0; i < p.Length; i++)
-            {
-                hBezEListArray[i] = PolynomialDerivative.HBezE(b0, p[i], PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1));
-            }
-
-            hBezEList = hBezEListArray.Select(h => ComplexFormatter.ToE(h)).ToArray();
-
-            int length = p.All(x => x.IsReal()) ? p.Length : p.Length - 1;
-            eh = new string[length];
-
-            for (int i = 0; i < length; i++)
-            {
-                eh[i] = ComplexFormatter.ToEHAlt(hBezEListArray[i], p[i]);
-            }
-
-            result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
-
-            ResultsAvailable = true;
-            errorMessage = null;
+            CalculateResults();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            ResultsAvailable = false;
-            errorMessage = $"Ошибка при расчете: {ex.Message}";
+            _resultsAvailable = false;
+            _errorMessage = $"Ошибка при расчете: {exception.Message}";
         }
+
+        _resultsAvailable = true;
+        _errorMessage = null;
     }
 
-    public static class ComplexFormatter
+    private void SetVariantValues(VariantData values)
     {
-        public static string FormatComplex(Complex c, int decimals = 6)
-        {
-            string realPart = c.Real.ToString($"F{decimals}");
-            string imagPart = c.Imaginary.ToString($"F{decimals}");
-
-            return c.Imaginary switch
-            {
-                > 0 => $"{realPart} + {imagPart}i",
-                0 => $"{realPart}",
-                var _ => $"{realPart} - {Math.Abs(c.Imaginary).ToString($"F{decimals}")}i"
-            };
-        }
-
-        public static string ToE(Complex val, int decimals = 6)
-        {
-            if (val.IsReal())
-            {
-                return val.Real.ToString($"F{decimals}");
-            }
-
-            double a = val.Real;
-            double b = val.Imaginary;
-            double magnitude = Math.Sqrt(a * a + b * b);
-            double angle = Math.Atan(b / a);
-            return $"{magnitude.ToString($"F{decimals}")} * e^({(angle * 180 / Math.PI).ToString($"F{decimals}")} * i)";
-        }
-
-        public static string ToEHAlt(Complex val, Complex pi)
-        {
-            double a = val.Real;
-            double b = val.Imaginary;
-            double magnitude = Math.Sqrt(a * a + b * b);
-            double angle = Math.Atan(b / a);
-
-            if (b == 0)
-            {
-                return $"{Math.Sign(a) * magnitude:F6} * exp({pi.Real:F6} * t)";
-            }
-
-            return $"{Math.Sign(a) * 2 * magnitude:F6} * exp({pi.Real:F6} * t) * cos({Math.Abs(pi.Imaginary):F6} * t + {angle:F6})";
-        }
+        _inputForm?.SetData(values);
     }
 
-    public static class PolynomialDerivative
+    private void CalculateResults()
     {
-        public static Complex Proizvodnaya(Complex p, double a3, double a2, double a1)
+        if (_inputForm == null)
         {
-            return a3 * 3 * p * p + a2 * 2 * p + a1;
+            return;
         }
 
-        public static Complex HBezE(double b, Complex p, Complex proiz)
-        {
-            return b / (p * proiz);
-        }
+        (double k11, double k21, double k31, double k41, double k51, double T31, double T41) = _inputForm.GetData();
+
+        double a0 = k11 * k21 * k31 * k41 / (T31 * T41);
+        double a1 = (1 + k31 * k51) / (T31 * T41);
+        double a2 = (T41 * (k31 * k51 + 1) + T31) / (T31 * T41);
+        double a3 = 1;
+        double b0 = a0;
+
+        _calculateData = new CalculateData(a0, a1, a2, a3, b0);
+
+        Polynomial polynomial = new(a0, a1, a2, a3);
+        Polynomial differentiate = polynomial.Differentiate();
+
+        Complex[] roots = polynomial.Roots().OrderByDescending(complex => complex.IsReal()).ToArray();
+        Complex[] derivatives = roots.Select(x => differentiate.Evaluate(x)).ToArray();
+        Complex[] hBezEList = roots.Zip(derivatives, (a, b) => ComplexFormatter.HBezE(b0, a, b)).ToArray();
+
+        int length = roots.All(x => x.IsReal()) ? roots.Length : roots.Length - 1;
+        string[] eh = roots.Zip(hBezEList, (a, b) => ComplexFormatter.ToEHAlt(b, a)).Take(length).ToArray();
+
+        string result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
+
+        _calculateResult = new CalculateResult(roots, derivatives, hBezEList, eh, result);
     }
 }

@@ -1,0 +1,17 @@
+﻿@if (Variants is { Count: > 0 })
+{
+    <div>
+        <label for="variant">Выберите вариант:</label>
+        <select id="variant" @bind="SelectedVariant" @onblur="OnSelectedVariant">
+            <option value="@DefaultVariant">Ручной</option>
+            @foreach (int key in Variants.Keys)
+            {
+                <option value="@key">Вариант @key</option>
+            }
+        </select>
+    </div>
+}
+else
+{
+    <p>Нет загруженных вариантов.</p>
+}

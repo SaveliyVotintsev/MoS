@@ -2,153 +2,25 @@
 
 <h3>Форма расчета</h3>
 
-<div>
-    <label>K<sub>11</sub>: </label>
-    <input @bind="k11" type="number" />
-</div>
-<div>
-    <label>K<sub>21</sub>: </label>
-    <input @bind="k21" type="number" />
-</div>
-<div>
-    <label>K<sub>31</sub>: </label>
-    <input @bind="k31" type="number" />
-</div>
-<div>
-    <label>K<sub>41</sub>: </label>
-    <input @bind="k41" type="number" />
-</div>
-<div>
-    <label>K<sub>51</sub>: </label>
-    <input @bind="k51" type="number" />
-</div>
-<div>
-    <label>T<sub>31</sub>: </label>
-    <input @bind="T31" type="number" />
-</div>
-<div>
-    <label>T<sub>41</sub>: </label>
-    <input @bind="T41" type="number" />
-</div>
+<InputForm @ref="_inputForm" />
 
-@if (Variants is { Count: > 0 })
-{
-    <div>
-        <label for="variant">Выберите вариант:</label>
-        <select id="variant" @bind="variant">
-            <option value="-1">Ручной</option>
-            @foreach (int key in Variants.Keys)
-            {
-                <option value="@key">Вариант @key</option>
-            }
-        </select>
-    </div>
-}
-else
-{
-    <p>Нет загруженных вариантов.</p>
-}
+<VariantSelector OnVariantSelected="SetVariantValues" />
 
 <button @onclick="Submit">Рассчитать</button>
 
-@if (!string.IsNullOrEmpty(errorMessage))
+@if (string.IsNullOrEmpty(_errorMessage) == false)
 {
     <div style="color:red;">
-        <p>@errorMessage</p>
+        <p>@_errorMessage</p>
     </div>
 }
 
-@if (ResultsAvailable)
+@if (_resultsAvailable)
 {
-    <h3>Результат:</h3>
-    <textarea @bind="result" readonly style="width: 90vw" type="text"></textarea>
-
-    <h3>Расчеты:</h3>
-    <p>B<sub>0</sub>: @b0.ToString($"F{_decimals}")</p>
-    <p>A<sub>0</sub>: @a0.ToString($"F{_decimals}")</p>
-    <p>A<sub>1</sub>: @a1.ToString($"F{_decimals}")</p>
-    <p>A<sub>2</sub>: @a2.ToString($"F{_decimals}")</p>
-    <p>A<sub>3</sub>: @a3.ToString($"F{_decimals}")</p>
-
-    <h4>Корни:</h4>
-
-    foreach (string root in Roots)
-    {
-        <p>@root</p>
-    }
-
-    <h4>Производные:</h4>
-
-    foreach (string derivative in Derivatives)
-    {
-        <p>@derivative</p>
-    }
-
-    <h4>hBezEList:</h4>
-
-    foreach (string h in hBezEList)
-    {
-        <p>@h</p>
-    }
-
-    <h4>Значения EH:</h4>
-
-    foreach (string e in eh)
-    {
-        <p>@e</p>
-    }
+    <CascadingValue Value="Decimals">
+        <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
+    </CascadingValue>
 }
 
 <h3>Загруженные варианты</h3>
-
-@if (Variants is { Count: > 0 })
-{
-    <button @onclick="ToggleVariantsTable">@(_isTableExpanded ? "Свернуть" : "Развернуть")</button>
-
-    @if (_isTableExpanded)
-    {
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th title="Вариант">В.</th>
-                <th>K<sub>11</sub></th>
-                <th>K<sub>21</sub></th>
-                <th>K<sub>31</sub></th>
-                <th>K<sub>41</sub></th>
-                <th>K<sub>51</sub></th>
-                <th>T<sub>31</sub></th>
-                <th>T<sub>41</sub></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (KeyValuePair<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)> variant in Variants)
-            {
-                <tr>
-                    <td>@variant.Key</td>
-                    <td>@variant.Value.k11</td>
-                    <td>@variant.Value.k21</td>
-                    <td>@variant.Value.k31</td>
-                    <td>@variant.Value.k41</td>
-                    <td>@variant.Value.k51</td>
-                    <td>@variant.Value.T31</td>
-                    <td>@variant.Value.T41</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    }
-}
-else
-{
-    <p>Нет загруженных вариантов.</p>
-}
-
-@code {
-    private bool _isTableExpanded;
-
-    private void ToggleVariantsTable()
-    {
-        _isTableExpanded = !_isTableExpanded;
-    }
-
-}
+<VariantsTable />
