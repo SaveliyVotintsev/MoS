@@ -19,6 +19,7 @@ public partial class CalculationForm
     private bool ResultsAvailable;
     private Dictionary<int, (double k11, double k21, double k31, double k41, double k51, double T31, double T41)> Variants;
     private string? errorMessage;
+    private string result;
 
     [Inject]
     public HttpClient Http { get; set; }
@@ -144,8 +145,10 @@ public partial class CalculationForm
 
             for (int i = 0; i < p.Length - 1; i++)
             {
-                eh[i] = ComplexFormatter.ToEH(hBezEListArray[i], p[i]);
+                eh[i] = ComplexFormatter.ToEHAlt(hBezEListArray[i], p[i]);
             }
+
+            result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"- {e}"))}".Replace(",", ".");
 
             ResultsAvailable = true;
             errorMessage = null;
@@ -188,6 +191,21 @@ public partial class CalculationForm
             }
 
             return $"{Math.Sign(a) * 2 * magnitude:F6} * e^({pi.Real:F6} * t) * cos({Math.Abs(pi.Imaginary):F6} * t + {angle:F6})";
+        }
+
+        public static string ToEHAlt(Complex val, Complex pi)
+        {
+            double a = val.Real;
+            double b = val.Imaginary;
+            double magnitude = Math.Sqrt(a * a + b * b);
+            double angle = Math.Atan(b / a);
+
+            if (b == 0)
+            {
+                return $"{Math.Sign(a) * magnitude:F6} * exp({pi.Real:F6} * t)";
+            }
+
+            return $"{Math.Sign(a) * 2 * magnitude:F6} * exp({pi.Real:F6} * t) * cos({Math.Abs(pi.Imaginary):F6} * t + {angle:F6})";
         }
     }
 

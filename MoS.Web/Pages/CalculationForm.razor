@@ -3,31 +3,31 @@
 <h3>Форма расчета</h3>
 
 <div>
-    <label>K11: </label>
+    <label>K<sub>11</sub>: </label>
     <input @bind="k11" type="number" />
 </div>
 <div>
-    <label>K21: </label>
+    <label>K<sub>21</sub>: </label>
     <input @bind="k21" type="number" />
 </div>
 <div>
-    <label>K31: </label>
+    <label>K<sub>31</sub>: </label>
     <input @bind="k31" type="number" />
 </div>
 <div>
-    <label>K41: </label>
+    <label>K<sub>41</sub>: </label>
     <input @bind="k41" type="number" />
 </div>
 <div>
-    <label>K51: </label>
+    <label>K<sub>51</sub>: </label>
     <input @bind="k51" type="number" />
 </div>
 <div>
-    <label>T31: </label>
+    <label>T<sub>31</sub>: </label>
     <input @bind="T31" type="number" />
 </div>
 <div>
-    <label>T41: </label>
+    <label>T<sub>41</sub>: </label>
     <input @bind="T41" type="number" />
 </div>
 
@@ -60,12 +60,15 @@ else
 
 @if (ResultsAvailable)
 {
-    <h3>Результаты:</h3>
-    <p>B0: @b0</p>
-    <p>A0: @a0</p>
-    <p>A1: @a1</p>
-    <p>A2: @a2</p>
-    <p>A3: @a3</p>
+    <h3>Результат:</h3>
+    <textarea @bind="result" readonly style="width: 100%" type="text"></textarea>
+
+    <h3>Расчеты:</h3>
+    <p>B<sub>0</sub>: @b0</p>
+    <p>A<sub>0</sub>: @a0</p>
+    <p>A<sub>1</sub>: @a1</p>
+    <p>A<sub>2</sub>: @a2</p>
+    <p>A<sub>3</sub>: @a3</p>
 
     <h4>Корни:</h4>
 
@@ -107,14 +110,14 @@ else
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>Вариант</th >
-                <th>K11</th>
-                <th>K21</th>
-                <th>K31</th>
-                <th>K41</th>
-                <th>K51</th>
-                <th>T31</th>
-                <th>T41</th>
+                <th title="Вариант">В.</th>
+                <th>K<sub>11</sub></th>
+                <th>K<sub>21</sub></th>
+                <th>K<sub>31</sub></th>
+                <th>K<sub>41</sub></th>
+                <th>K<sub>51</sub></th>
+                <th>T<sub>31</sub></th>
+                <th>T<sub>41</sub></th>
             </tr>
             </thead>
             <tbody>
