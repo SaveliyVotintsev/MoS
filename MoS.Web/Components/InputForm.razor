@@ -1,28 +1,7 @@
-﻿<div>
-    <label>K<sub>11</sub>: </label>
-    <input @bind="k11" type="number" />
-</div>
-<div>
-    <label>K<sub>21</sub>: </label>
-    <input @bind="k21" type="number" />
-</div>
-<div>
-    <label>K<sub>31</sub>: </label>
-    <input @bind="k31" type="number" />
-</div>
-<div>
-    <label>K<sub>41</sub>: </label>
-    <input @bind="k41" type="number" />
-</div>
-<div>
-    <label>K<sub>51</sub>: </label>
-    <input @bind="k51" type="number" />
-</div>
-<div>
-    <label>T<sub>31</sub>: </label>
-    <input @bind="T31" type="number" />
-</div>
-<div>
-    <label>T<sub>41</sub>: </label>
-    <input @bind="T41" type="number" />
-</div>
+﻿<MudNumericField @bind-Value="k11" DebounceInterval="500" Label="K11" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="k21" DebounceInterval="500" Label="K21" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="k31" DebounceInterval="500" Label="K31" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="k41" DebounceInterval="500" Label="K41" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="k51" DebounceInterval="500" Label="K51" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="T31" DebounceInterval="500" Label="T31" Step=".2D" Variant="Variant.Outlined" />
+<MudNumericField @bind-Value="T41" DebounceInterval="500" Label="T41" Step=".2D" Variant="Variant.Outlined" />

@@ -35,6 +35,7 @@ public partial class CalculationForm
     private void SetVariantValues(VariantData values)
     {
         _inputForm?.SetData(values);
+        StateHasChanged();
     }
 
     private void CalculateResults()
@@ -67,5 +68,6 @@ public partial class CalculationForm
         string result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
 
         _calculateResult = new CalculateResult(roots, derivatives, hBezEList, eh, result);
+        StateHasChanged();
     }
 }

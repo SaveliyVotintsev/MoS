@@ -1,42 +1,31 @@
-﻿@using MoS.Web.Models
-@if (Variants is { Count: > 0 })
+﻿@if (Variants is { Count: > 0 })
 {
-    <button @onclick="ToggleVariantsTable">@(!_isTableExpanded ? "Развернуть" : "Свернуть")</button>
-
-    @if (_isTableExpanded)
-    {
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th title="Вариант">В.</th>
-                <th>K<sub>11</sub></th>
-                <th>K<sub>21</sub></th>
-                <th>K<sub>31</sub></th>
-                <th>K<sub>41</sub></th>
-                <th>K<sub>51</sub></th>
-                <th>T<sub>31</sub></th>
-                <th>T<sub>41</sub></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach ((int key, VariantData? value) in Variants)
-            {
-                <tr>
-                    <td>@key</td>
-                    <td>@value.k11</td>
-                    <td>@value.k21</td>
-                    <td>@value.k31</td>
-                    <td>@value.k41</td>
-                    <td>@value.k51</td>
-                    <td>@value.T31</td>
-                    <td>@value.T41</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    }
+    <MudExpansionPanel Text="Варианты">
+        <MudTable Items="Variants" Striped FixedHeader Height="800px">
+            <HeaderContent>
+                <MudTh title="Вариант">В.</MudTh>
+                <MudTh>K<sub>11</sub></MudTh>
+                <MudTh>K<sub>21</sub></MudTh>
+                <MudTh>K<sub>31</sub></MudTh>
+                <MudTh>K<sub>41</sub></MudTh>
+                <MudTh>K<sub>51</sub></MudTh>
+                <MudTh>T<sub>31</sub></MudTh>
+                <MudTh>T<sub>41</sub></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Key</MudTd>
+                <MudTd>@context.Value.k11</MudTd>
+                <MudTd>@context.Value.k21</MudTd>
+                <MudTd>@context.Value.k31</MudTd>
+                <MudTd>@context.Value.k41</MudTd>
+                <MudTd>@context.Value.k51</MudTd>
+                <MudTd>@context.Value.T31</MudTd>
+                <MudTd>@context.Value.T41</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudExpansionPanel>
 }
 else
 {
-    <p>Нет загруженных вариантов.</p>
+    <MudText>Нет загруженных вариантов.</MudText>
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
 
@@ -7,6 +8,8 @@ namespace MoS.Web.Components;
 public partial class VariantSelector
 {
     private const string DefaultVariant = "-1";
+    private const string LocalStorageKey = "SelectedVariant";
+    private string _selectedVariant = DefaultVariant;
 
     [Parameter]
     [EditorRequired]
@@ -15,16 +18,31 @@ public partial class VariantSelector
     [Inject]
     private IVariantService VariantService { get; set; } = null!;
 
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
     private Dictionary<int, VariantData>? Variants { get; set; }
-    private string SelectedVariant { get; set; } = DefaultVariant;
+
+    private string SelectedVariant
+    {
+        get => _selectedVariant;
+        set
+        {
+            _selectedVariant = value;
+            OnSelectedVariant();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         Variants = await VariantService.LoadVariantsAsync();
+        SelectedVariant = await LocalStorage.GetItemAsync<string>(LocalStorageKey) ?? DefaultVariant;
     }
 
     private async Task OnSelectedVariant()
     {
+        Console.WriteLine($"Selected variant {SelectedVariant}");
+
         string variant = SelectedVariant;
 
         if (string.IsNullOrEmpty(variant))
@@ -38,5 +56,6 @@ public partial class VariantSelector
         }
 
         await OnVariantSelected.InvokeAsync(variantData);
+        await LocalStorage.SetItemAsync(LocalStorageKey, variant);
     }
 }

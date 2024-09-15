@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoS.Web.Models;
+using MudBlazor;
 
 namespace MoS.Web.Components;
 
 public partial class ResultsDisplay
 {
+    private MudExpansionPanels? _panels;
+
     [CascadingParameter]
     public int Decimals { get; set; }
 
@@ -15,4 +18,15 @@ public partial class ResultsDisplay
     [Parameter]
     [EditorRequired]
     public required CalculateResult CalculateResult { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_panels != null)
+            {
+                await _panels.ExpandAllAsync();
+            }
+        }
+    }
 }

@@ -1,67 +1,82 @@
-﻿<h3>Результат:</h3>
-
-@if (CalculateData == null || CalculateResult == null)
+﻿@if (CalculateData == null || CalculateResult == null)
 {
-    <p>Нет результатов</p>
-    return;
+    <MudStack AlignItems="AlignItems.Center" Row>
+        <MudProgressCircular Indeterminate />
+        <MudText Typo="Typo.body1">Нет результатов...</MudText>
+    </MudStack>
 }
-
-<textarea readonly style="width: 90vw" type="text">
-@CalculateResult.Result
-</textarea>
-
-<h3>Расчеты:</h3>
-<p>B<sub>0</sub>: @CalculateData.b0.ToString($"F{Decimals}")</p>
-<p>A<sub>0</sub>: @CalculateData.a0.ToString($"F{Decimals}")</p>
-<p>A<sub>1</sub>: @CalculateData.a1.ToString($"F{Decimals}")</p>
-<p>A<sub>2</sub>: @CalculateData.a2.ToString($"F{Decimals}")</p>
-<p>A<sub>3</sub>: @CalculateData.a3.ToString($"F{Decimals}")</p>
-
-<h4>Корни:</h4>
-
-@foreach (Complex root in CalculateResult.Roots)
+else
 {
-    <p>@root</p>
-}
+    <MudExpansionPanels @ref="_panels" MultiExpansion>
+        <MudExpansionPanel Text="Результат">
+            <MudTextField Value="CalculateResult.Result" ReadOnly FullWidth AutoGrow></MudTextField>
+        </MudExpansionPanel>
 
-<hr />
+        <MudExpansionPanel Text="Расчеты">
+            <MudList T="string">
+                <MudListItem>B<sub>0</sub>: @CalculateData.b0.ToString($"F{Decimals}")</MudListItem>
+                <MudListItem>A<sub>0</sub>: @CalculateData.a0.ToString($"F{Decimals}")</MudListItem>
+                <MudListItem>A<sub>1</sub>: @CalculateData.a1.ToString($"F{Decimals}")</MudListItem>
+                <MudListItem>A<sub>2</sub>: @CalculateData.a2.ToString($"F{Decimals}")</MudListItem>
+                <MudListItem>A<sub>3</sub>: @CalculateData.a3.ToString($"F{Decimals}")</MudListItem>
+            </MudList>
+        </MudExpansionPanel>
 
-@foreach (string root in CalculateResult.Roots.Select(complex => ComplexFormatter.FormatComplex(complex, Decimals)))
-{
-    <p>@root</p>
-}
+        <MudExpansionPanel Text="Корни">
+            <MudList T="Complex">
+                @foreach (Complex root in CalculateResult.Roots)
+                {
+                    <MudListItem>@root</MudListItem>
+                }
+            </MudList>
+            <MudDivider />
+            <MudList T="string">
+                @foreach (string root in CalculateResult.Roots.Select(complex => ComplexFormatter.FormatComplex(complex, Decimals)))
+                {
+                    <MudListItem>@root</MudListItem>
+                }
+            </MudList>
+        </MudExpansionPanel>
 
-<h4>Производные:</h4>
+        <MudExpansionPanel Text="Производные">
+            <MudList T="Complex">
+                @foreach (Complex derivative in CalculateResult.Derivatives)
+                {
+                    <MudListItem>@derivative</MudListItem>
+                }
+            </MudList>
+            <MudDivider />
+            <MudList T="string">
+                @foreach (string derivative in CalculateResult.Derivatives.Select(complex => ComplexFormatter.ToE(complex, Decimals)))
+                {
+                    <MudListItem>@derivative</MudListItem>
+                }
+            </MudList>
+        </MudExpansionPanel>
 
-@foreach (Complex derivative in CalculateResult.Derivatives)
-{
-    <p>@derivative</p>
-}
+        <MudExpansionPanel Text="hBezEList">
+            <MudList T="Complex">
+                @foreach (Complex h in CalculateResult.HBezEList)
+                {
+                    <MudListItem>@h</MudListItem>
+                }
+            </MudList>
+            <MudDivider />
+            <MudList T="string">
+                @foreach (string h in CalculateResult.HBezEList.Select(complex => ComplexFormatter.ToE(complex, Decimals)))
+                {
+                    <MudListItem>@h</MudListItem>
+                }
+            </MudList>
+        </MudExpansionPanel>
 
-<hr />
-
-@foreach (string derivative in CalculateResult.Derivatives.Select(complex => ComplexFormatter.ToE(complex, Decimals)))
-{
-    <p>@derivative</p>
-}
-
-<h4>hBezEList:</h4>
-
-@foreach (Complex h in CalculateResult.HBezEList)
-{
-    <p>@h</p>
-}
-
-<hr />
-
-@foreach (string h in CalculateResult.HBezEList.Select(complex => ComplexFormatter.ToE(complex, Decimals)))
-{
-    <p>@h</p>
-}
-
-<h4>Значения EH:</h4>
-
-@foreach (string e in CalculateResult.Eh)
-{
-    <p>@e</p>
+        <MudExpansionPanel Text="Значения EH">
+            <MudList T="string">
+                @foreach (string e in CalculateResult.Eh)
+                {
+                    <MudListItem>@e</MudListItem>
+                }
+            </MudList>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 }

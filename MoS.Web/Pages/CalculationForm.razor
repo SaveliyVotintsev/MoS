@@ -1,26 +1,32 @@
 ﻿@page "/"
 
-<h3>Форма расчета</h3>
+<MudContainer>
+    <MudStack Spacing="3">
+        <MudStack>
+            <h3>Форма расчета</h3>
+            <InputForm @ref="_inputForm" />
+        </MudStack>
 
-<InputForm @ref="_inputForm" />
+        <MudStack Row>
+            <MudButton Variant="Variant.Filled" OnClick="Submit">Рассчитать</MudButton>
+            <VariantSelector OnVariantSelected="SetVariantValues" />
+        </MudStack>
 
-<VariantSelector OnVariantSelected="SetVariantValues" />
+        @if (string.IsNullOrEmpty(_errorMessage) == false)
+        {
+            <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+        }
 
-<button @onclick="Submit">Рассчитать</button>
+        @if (_resultsAvailable)
+        {
+            <CascadingValue Value="Decimals">
+                <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
+            </CascadingValue>
+        }
 
-@if (string.IsNullOrEmpty(_errorMessage) == false)
-{
-    <div style="color:red;">
-        <p>@_errorMessage</p>
-    </div>
-}
-
-@if (_resultsAvailable)
-{
-    <CascadingValue Value="Decimals">
-        <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
-    </CascadingValue>
-}
-
-<h3>Загруженные варианты</h3>
-<VariantsTable />
+        <MudStack>
+            <h3>Загруженные варианты</h3>
+            <VariantsTable />
+        </MudStack>
+    </MudStack>
+</MudContainer>
