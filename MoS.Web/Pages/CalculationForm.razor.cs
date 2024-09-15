@@ -141,9 +141,10 @@ public partial class CalculationForm
 
             hBezEList = hBezEListArray.Select(h => h.ToString()).ToArray();
 
-            eh = new string[p.Length - 1];
+            int length = p.All(x => x.Imaginary == 0) ? p.Length : p.Length - 1;
+            eh = new string[length];
 
-            for (int i = 0; i < p.Length - 1; i++)
+            for (int i = 0; i < length; i++)
             {
                 eh[i] = ComplexFormatter.ToEHAlt(hBezEListArray[i], p[i]);
             }
