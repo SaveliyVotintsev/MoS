@@ -64,11 +64,11 @@ else
     <textarea @bind="result" readonly style="width: 90vw" type="text"></textarea>
 
     <h3>Расчеты:</h3>
-    <p>B<sub>0</sub>: @b0</p>
-    <p>A<sub>0</sub>: @a0</p>
-    <p>A<sub>1</sub>: @a1</p>
-    <p>A<sub>2</sub>: @a2</p>
-    <p>A<sub>3</sub>: @a3</p>
+    <p>B<sub>0</sub>: @b0.ToString($"F{_decimals}")</p>
+    <p>A<sub>0</sub>: @a0.ToString($"F{_decimals}")</p>
+    <p>A<sub>1</sub>: @a1.ToString($"F{_decimals}")</p>
+    <p>A<sub>2</sub>: @a2.ToString($"F{_decimals}")</p>
+    <p>A<sub>3</sub>: @a3.ToString($"F{_decimals}")</p>
 
     <h4>Корни:</h4>
 

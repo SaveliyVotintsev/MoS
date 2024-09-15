@@ -7,6 +7,7 @@ namespace MoS.Web.Pages;
 
 public partial class CalculationForm
 {
+    private readonly int _decimals = 6;
     private double b0;
     private double a0;
     private double a1;
@@ -139,9 +140,9 @@ public partial class CalculationForm
                 hBezEListArray[i] = PolynomialDerivative.HBezE(b0, p[i], PolynomialDerivative.Proizvodnaya(p[i], a3, a2, a1));
             }
 
-            hBezEList = hBezEListArray.Select(h => h.ToString()).ToArray();
+            hBezEList = hBezEListArray.Select(h => ComplexFormatter.ToE(h)).ToArray();
 
-            int length = p.All(x => x.Imaginary == 0) ? p.Length : p.Length - 1;
+            int length = p.All(x => x.IsReal()) ? p.Length : p.Length - 1;
             eh = new string[length];
 
             for (int i = 0; i < length; i++)
@@ -149,7 +150,7 @@ public partial class CalculationForm
                 eh[i] = ComplexFormatter.ToEHAlt(hBezEListArray[i], p[i]);
             }
 
-            result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"- {e}"))}".Replace(",", ".");
+            result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
 
             ResultsAvailable = true;
             errorMessage = null;
@@ -167,31 +168,27 @@ public partial class CalculationForm
         {
             string realPart = c.Real.ToString($"F{decimals}");
             string imagPart = c.Imaginary.ToString($"F{decimals}");
-            return c.Imaginary >= 0 ? $"{realPart} + {imagPart}i" : $"{realPart} - {Math.Abs(c.Imaginary).ToString($"F{decimals}")}i";
-        }
 
-        public static string ToE(Complex val)
-        {
-            double a = val.Real;
-            double b = val.Imaginary;
-            double magnitude = Math.Sqrt(a * a + b * b);
-            double angle = Math.Atan(b / a);
-            return $"{magnitude} * e^(i * {angle * 180 / Math.PI})";
-        }
-
-        public static string ToEH(Complex val, Complex pi)
-        {
-            double a = val.Real;
-            double b = val.Imaginary;
-            double magnitude = Math.Sqrt(a * a + b * b);
-            double angle = Math.Atan(b / a);
-
-            if (b == 0)
+            return c.Imaginary switch
             {
-                return $"{Math.Sign(a) * magnitude:F6} * e^({pi.Real:F6} * t)";
+                > 0 => $"{realPart} + {imagPart}i",
+                0 => $"{realPart}",
+                var _ => $"{realPart} - {Math.Abs(c.Imaginary).ToString($"F{decimals}")}i"
+            };
+        }
+
+        public static string ToE(Complex val, int decimals = 6)
+        {
+            if (val.IsReal())
+            {
+                return val.Real.ToString($"F{decimals}");
             }
 
-            return $"{Math.Sign(a) * 2 * magnitude:F6} * e^({pi.Real:F6} * t) * cos({Math.Abs(pi.Imaginary):F6} * t + {angle:F6})";
+            double a = val.Real;
+            double b = val.Imaginary;
+            double magnitude = Math.Sqrt(a * a + b * b);
+            double angle = Math.Atan(b / a);
+            return $"{magnitude.ToString($"F{decimals}")} * e^({(angle * 180 / Math.PI).ToString($"F{decimals}")} * i)";
         }
 
         public static string ToEHAlt(Complex val, Complex pi)
