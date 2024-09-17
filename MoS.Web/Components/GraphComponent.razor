@@ -1,0 +1,44 @@
+﻿@page "/graph"
+@using System.Globalization
+
+<MudCard Elevation="5">
+    <MudCardContent>
+        <canvas id="myChart" style="width:100%"></canvas>
+
+        <MudStack Row AlignItems="AlignItems.Center" StretchItems="StretchItems.Start">
+            <MudStack Row AlignItems="AlignItems.Center" StretchItems="StretchItems.All">
+                <MudStack>
+                    <MudNumericField @bind-Value="Step"
+                                     Culture="CultureInfo.InvariantCulture"
+                                     DebounceInterval="500"
+                                     Format="F2"
+                                     FullWidth
+                                     Label="Шаг"
+                                     Max="1"
+                                     Min="0.01"
+                                     Placeholder="Шаг интегрирования"
+                                     Step=".01D"
+                                     Variant="Variant.Outlined" />
+
+                    <MudSlider @bind-Value="Step" Max="1" Min="0.01" Step="0.01" ValueLabel />
+                </MudStack>
+
+                <MudStack>
+                    <MudNumericField @bind-Value="MaxT"
+                                     Culture="CultureInfo.InvariantCulture"
+                                     DebounceInterval="500"
+                                     FullWidth
+                                     Label="T"
+                                     Max="100"
+                                     Min="1"
+                                     Placeholder="Максимальное значение t"
+                                     Step="1"
+                                     Variant="Variant.Outlined" />
+
+                    <MudSlider @bind-Value="MaxT" Max="100" Min="1" Step="1" ValueLabel />
+                </MudStack>
+            </MudStack>
+            <MudIconButton Icon="@Icons.Material.TwoTone.Restore" OnClick="Restore"></MudIconButton>
+        </MudStack>
+    </MudCardContent>
+</MudCard>

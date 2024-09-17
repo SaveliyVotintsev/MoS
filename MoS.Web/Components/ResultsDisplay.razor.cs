@@ -7,6 +7,7 @@ namespace MoS.Web.Components;
 public partial class ResultsDisplay
 {
     private MudExpansionPanels? _panels;
+    private GraphComponent? _graph;
 
     [CascadingParameter]
     public int Decimals { get; set; }
@@ -21,6 +22,11 @@ public partial class ResultsDisplay
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_graph != null)
+        {
+            await _graph.Generate(CalculateResult.Result);
+        }
+
         if (firstRender)
         {
             if (_panels != null)

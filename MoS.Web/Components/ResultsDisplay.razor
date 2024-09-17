@@ -34,6 +34,8 @@ else
             </MudCard>
         </div>
 
+        <GraphComponent @ref="_graph" />
+
         <MudExpansionPanel Text="Расчеты">
             <MudList T="string">
                 <MudListItem>B<sub>0</sub>: @CalculateData.b0.ToString($"F{Decimals}")</MudListItem>
