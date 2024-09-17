@@ -29,4 +29,9 @@ public partial class ResultsDisplay
             }
         }
     }
+
+    private async Task CopyToClipboard(string value)
+    {
+        await ClipboardService.CopyToClipboard(value);
+    }
 }

@@ -18,6 +18,7 @@ builder.Services.AddScoped(_ => new HttpClient
 });
 
 builder.Services.AddScoped<IVariantService, VariantService>();
+builder.Services.AddScoped<IClipboardService, ClipboardService>();
 
 WebAssemblyHost app = builder.Build();
 await app.RunAsync();

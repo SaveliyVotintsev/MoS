@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using MathNet.Numerics;
 
-namespace MoS.Web.Pages;
+namespace MoS.Web.Services;
 
 public static class ComplexFormatter
 {

@@ -1,4 +1,5 @@
-﻿using MoS.Web.Models;
+﻿using System.Globalization;
+using MoS.Web.Models;
 
 namespace MoS.Web.Components;
 
@@ -21,5 +22,10 @@ public partial class InputForm
     {
         (k11, k21, k31, k41, k51, T31, T41) = data;
         StateHasChanged();
+    }
+
+    private async Task CopyToClipboard(double value)
+    {
+        await ClipboardService.CopyToClipboard(value.ToString(CultureInfo.InvariantCulture));
     }
 }

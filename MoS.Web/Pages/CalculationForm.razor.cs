@@ -2,6 +2,7 @@
 using MathNet.Numerics;
 using MoS.Web.Components;
 using MoS.Web.Models;
+using MoS.Web.Services;
 
 namespace MoS.Web.Pages;
 
