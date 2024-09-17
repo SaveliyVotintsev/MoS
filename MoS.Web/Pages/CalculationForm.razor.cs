@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using MathNet.Numerics;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MoS.Web.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
@@ -8,6 +10,7 @@ namespace MoS.Web.Pages;
 
 public partial class CalculationForm
 {
+    private const string ResultId = "result";
     private const int Decimals = 6;
 
     private CalculateData? _calculateData;
@@ -17,7 +20,10 @@ public partial class CalculationForm
     private string? _errorMessage;
     private InputForm? _inputForm;
 
-    private void Submit()
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private async Task Submit()
     {
         try
         {
@@ -31,6 +37,10 @@ public partial class CalculationForm
 
         _resultsAvailable = true;
         _errorMessage = null;
+        StateHasChanged();
+
+        await Task.Delay(100);
+        await JsRuntime.InvokeVoidAsync("scrollToElement", ResultId);
     }
 
     private void SetVariantValues(VariantData values)
