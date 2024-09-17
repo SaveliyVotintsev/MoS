@@ -29,7 +29,7 @@ public partial class VariantSelector
         set
         {
             _selectedVariant = value;
-            OnSelectedVariant();
+            _ = OnSelectedVariant();
         }
     }
 

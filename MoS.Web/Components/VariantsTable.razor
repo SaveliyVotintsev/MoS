@@ -1,31 +1,22 @@
-﻿@if (Variants is { Count: > 0 })
-{
-    <MudExpansionPanel Text="Варианты">
-        <MudTable Items="Variants" Striped FixedHeader Height="800px">
-            <HeaderContent>
-                <MudTh title="Вариант">В.</MudTh>
-                <MudTh>K<sub>11</sub></MudTh>
-                <MudTh>K<sub>21</sub></MudTh>
-                <MudTh>K<sub>31</sub></MudTh>
-                <MudTh>K<sub>41</sub></MudTh>
-                <MudTh>K<sub>51</sub></MudTh>
-                <MudTh>T<sub>31</sub></MudTh>
-                <MudTh>T<sub>41</sub></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.Key</MudTd>
-                <MudTd>@context.Value.k11</MudTd>
-                <MudTd>@context.Value.k21</MudTd>
-                <MudTd>@context.Value.k31</MudTd>
-                <MudTd>@context.Value.k41</MudTd>
-                <MudTd>@context.Value.k51</MudTd>
-                <MudTd>@context.Value.T31</MudTd>
-                <MudTd>@context.Value.T41</MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudExpansionPanel>
-}
-else
-{
-    <MudText>Нет загруженных вариантов.</MudText>
-}
+﻿<MudTable Dense FixedHeader HorizontalScrollbar ServerData="ServerReload" Striped>
+    <HeaderContent>
+        <MudTh title="Вариант">В.</MudTh>
+        <MudTh>K<sub>11</sub></MudTh>
+        <MudTh>K<sub>21</sub></MudTh>
+        <MudTh>K<sub>31</sub></MudTh>
+        <MudTh>K<sub>41</sub></MudTh>
+        <MudTh>K<sub>51</sub></MudTh>
+        <MudTh>T<sub>31</sub></MudTh>
+        <MudTh>T<sub>41</sub></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Key</MudTd>
+        <MudTd>@context.Value.k11</MudTd>
+        <MudTd>@context.Value.k21</MudTd>
+        <MudTd>@context.Value.k31</MudTd>
+        <MudTd>@context.Value.k41</MudTd>
+        <MudTd>@context.Value.k51</MudTd>
+        <MudTd>@context.Value.T31</MudTd>
+        <MudTd>@context.Value.T41</MudTd>
+    </RowTemplate>
+</MudTable>

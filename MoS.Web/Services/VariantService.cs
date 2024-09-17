@@ -5,17 +5,17 @@ namespace MoS.Web.Services;
 
 public interface IVariantService
 {
-    Task<Dictionary<int, VariantData>> LoadVariantsAsync();
+    Task<Dictionary<int, VariantData>> LoadVariantsAsync(CancellationToken cancellationToken = default);
 }
 
 public class VariantService(HttpClient httpClient, ILogger<VariantService> logger) : IVariantService
 {
-    public async Task<Dictionary<int, VariantData>> LoadVariantsAsync()
+    public async Task<Dictionary<int, VariantData>> LoadVariantsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             logger.LogTrace("Начало загрузки вариантов");
-            string fileContent = await httpClient.GetStringAsync("variants.txt");
+            string fileContent = await httpClient.GetStringAsync("variants.txt", cancellationToken);
             return ParseVariants(fileContent);
         }
         catch (Exception ex)

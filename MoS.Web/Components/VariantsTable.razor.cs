@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
+using MudBlazor;
 
 namespace MoS.Web.Components;
 
@@ -11,15 +12,14 @@ public partial class VariantsTable
     [Inject]
     private IVariantService VariantService { get; set; } = null!;
 
-    private Dictionary<int, VariantData>? Variants { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    private async Task<TableData<KeyValuePair<int, VariantData>>> ServerReload(TableState state, CancellationToken token)
     {
-        Variants = await VariantService.LoadVariantsAsync();
-    }
+        Dictionary<int, VariantData> data = await VariantService.LoadVariantsAsync(token);
 
-    private void ToggleVariantsTable()
-    {
-        _isTableExpanded = !_isTableExpanded;
+        return new TableData<KeyValuePair<int, VariantData>>
+        {
+            Items = data,
+            TotalItems = data.Count
+        };
     }
 }
