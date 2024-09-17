@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using Microsoft.AspNetCore.Components;
 using MoS.Web.Models;
+using MoS.Web.Services;
 
 namespace MoS.Web.Components;
 
@@ -12,6 +14,9 @@ public partial class InputForm
     private double k51 { get; set; }
     private double T31 { get; set; }
     private double T41 { get; set; }
+
+    [Inject]
+    private IClipboardService ClipboardService { get; set; } = null!;
 
     public VariantData GetData()
     {

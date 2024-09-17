@@ -16,6 +16,7 @@ public partial class CalculationForm
     private CalculateData? _calculateData;
     private CalculateResult? _calculateResult;
 
+    private bool _isReloadRequired = true;
     private bool _resultsAvailable;
     private string? _errorMessage;
     private InputForm? _inputForm;
@@ -36,6 +37,7 @@ public partial class CalculationForm
         }
 
         _resultsAvailable = true;
+        _isReloadRequired = false;
         _errorMessage = null;
         StateHasChanged();
 
@@ -46,6 +48,7 @@ public partial class CalculationForm
     private void SetVariantValues(VariantData values)
     {
         _inputForm?.SetData(values);
+        _isReloadRequired = true;
         StateHasChanged();
     }
 

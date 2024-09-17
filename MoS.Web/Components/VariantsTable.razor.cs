@@ -7,8 +7,6 @@ namespace MoS.Web.Components;
 
 public partial class VariantsTable
 {
-    private bool _isTableExpanded;
-
     [Inject]
     private IVariantService VariantService { get; set; } = null!;
 

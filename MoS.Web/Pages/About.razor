@@ -1,3 +1,64 @@
 ﻿@page "/about"
 
-<h3>About</h3>
+<MudContainer>
+    <MudStack Spacing="3">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">
+                    Проект является переработкой скрипта для нахождения <code>h(t)</code> на Python.
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardContent>
+                <MudList T="string">
+                    <MudListItem>
+                        <MudText>
+                            Исходный код проекта доступен на
+                            <MudChip T="string" Icon="@Icons.Custom.Brands.GitHub">
+                                <MudLink Href="https://github.com/SaveliyVotintsev/MoS">GitHub</MudLink>
+                            </MudChip>
+                        </MudText>
+                    </MudListItem>
+                    <MudListItem>
+                        <MudText>
+                            Автор изначального скрипта
+                            <MudChip T="string">
+                                <AvatarContent>
+                                    <MudAvatar>
+                                        <MudImage Src="https://sun3-22.userapi.com/a8iSlC325UQd570ZOEZiqainsTcbwGR_lxHCpA/CzTUC3tdko8.png"></MudImage>
+                                    </MudAvatar>
+                                </AvatarContent>
+                                <ChildContent>
+                                    <MudLink Href="https://vk.com/rezonchik0400">Алексей Бондаренко</MudLink>
+                                </ChildContent>
+                            </MudChip>
+                        </MudText>
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">
+                    Основные нововведения
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList T="string">
+                    <MudListItem Icon="@Icons.Material.Filled.AddCircle">
+                        Загрузка исходных данных с помощью выбора варианта
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.AddCircle">
+                        Результат вычисления подготовлен для ввода в программу проверки
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.AddCircle">
+                        Отображение графика вычисленной функции
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+</MudContainer>

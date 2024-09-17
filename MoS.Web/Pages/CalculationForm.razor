@@ -8,7 +8,7 @@
         </MudStack>
 
         <MudStack Row>
-            <MudButton Color="Color.Primary" OnClick="Submit" Variant="Variant.Filled">Рассчитать</MudButton>
+            <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface" OnClick="Submit" Variant="Variant.Filled">Рассчитать</MudButton>
             <VariantSelector OnVariantSelected="SetVariantValues" />
         </MudStack>
 
