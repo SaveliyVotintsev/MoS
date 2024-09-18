@@ -49,6 +49,13 @@ function updateChart(functionString, step, maxT) {
     }
 }
 
+function deleteChart() {
+    if (chart) {
+        chart.destroy();
+        chart = null;
+    }
+}
+
 function generateData(functionString, step, maxT) {
     const labels = [];
     const values = [];

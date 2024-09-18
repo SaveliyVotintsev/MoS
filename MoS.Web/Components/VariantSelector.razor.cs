@@ -41,8 +41,6 @@ public partial class VariantSelector
 
     private async Task OnSelectedVariant()
     {
-        Console.WriteLine($"Selected variant {SelectedVariant}");
-
         string variant = SelectedVariant;
 
         if (string.IsNullOrEmpty(variant))

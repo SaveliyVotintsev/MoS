@@ -52,6 +52,12 @@ public partial class GraphComponent
 
         _functionString = functionString;
         await JsRuntime.InvokeVoidAsync("updateChart", _functionString, Step, MaxT);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("deleteChart");
     }
 
     protected override async Task OnParametersSetAsync()
