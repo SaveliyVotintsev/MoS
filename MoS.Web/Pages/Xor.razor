@@ -1,0 +1,79 @@
+﻿@page "/xor-shift"
+
+<MudContainer>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5">XOR и Сдвиг Битового Кода</MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Code" Label="Введите код" Type="number" />
+            <MudButton OnClick="Encrypt" Color="Color.Primary">Выполнить</MudButton>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.body1">Результат:</MudText>
+            @foreach (string line in Result.Split("\n"))
+            {
+                <MudText Typo="Typo.body2">@line</MudText>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string Result { get; set; } = string.Empty;
+
+    private string Shift(string a, int n)
+    {
+        n = n % a.Length;
+        return a.Substring(a.Length - n) + a.Substring(0, a.Length - n);
+    }
+
+    private string ShiftLeft(string a, int n)
+    {
+        n = n % a.Length;
+        return a.Substring(n) + a.Substring(0, n);
+    }
+
+    private string XorStrings(string a, string b)
+    {
+        return string.Concat(a.Zip(b, (x, y) => (int.Parse(x.ToString()) ^ int.Parse(y.ToString())).ToString()));
+    }
+
+    private void Encrypt()
+    {
+        int code = Code;
+        Result = $"Изначальный код, k = {code}\n";
+        string binCode = Convert.ToString(code, 2).PadLeft(8, '0');
+        Result += "Код в 2СС: " + binCode + "\n";
+        int k1 = 1;
+        Result += $"Первый раунд, k = {k1}\n";
+        string leftHalf = binCode.Substring(0, 4);
+        Result += $"Левая часть = {leftHalf}\n";
+        string rightHalf = binCode.Substring(4);
+        Result += $"Правая часть = {rightHalf}\n";
+        string shiftedLeftHalf = Shift(leftHalf, k1);
+        Result += $"Сдвигаем левую часть на k = {k1} ..\n";
+        Result += $"Результат сдвига = {shiftedLeftHalf}\n";
+        Result += "Выполняем XOR с правой частью..\n";
+        rightHalf = XorStrings(shiftedLeftHalf, rightHalf);
+        Result += $"Результат XOR = {rightHalf}\n";
+        (leftHalf, rightHalf) = (rightHalf, leftHalf);
+        Result += "Результат первого раунда: " + leftHalf + rightHalf + "\n";
+        Result += "------------\n";
+        int k2 = 1;
+        Result += $"Финальный раунд: k = {k2}\n";
+        Result += $"Левая часть = {leftHalf}\n";
+        Result += $"Правая часть = {rightHalf}\n";
+        Result += $"Сдвигаем левую часть на k = {k2} ..\n";
+        string shLeftHalf = Shift(leftHalf, k2);
+        Result += $"Результат сдвига = {shLeftHalf}\n";
+        Result += "Выполняем XOR с правой частью..\n";
+        rightHalf = XorStrings(shLeftHalf, rightHalf);
+        Result += $"Результат XOR = {rightHalf}\n";
+        Result += "Результат финального раунда: " + leftHalf + rightHalf + "\n";
+        int finalResult = Convert.ToInt32(leftHalf + rightHalf, 2);
+        Result += $"Новый код символа: {finalResult}\n";
+    }
+
+    public int Code { get; set; }
+}
