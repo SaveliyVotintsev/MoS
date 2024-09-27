@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using MoS.Web.Models;
+﻿using MoS.Web.Models;
+using System.Globalization;
 
 namespace MoS.Web.Services;
 
@@ -15,7 +15,7 @@ public class VariantService(HttpClient httpClient, ILogger<VariantService> logge
         try
         {
             logger.LogTrace("Начало загрузки вариантов");
-            string fileContent = await httpClient.GetStringAsync("variants.txt", cancellationToken);
+            string fileContent = await httpClient.GetStringAsync("data/variants.txt", cancellationToken);
             return ParseVariants(fileContent);
         }
         catch (Exception ex)

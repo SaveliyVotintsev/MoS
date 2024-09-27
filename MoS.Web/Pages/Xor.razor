@@ -5,33 +5,90 @@
         <MudItem xs="12">
             <MudText Typo="Typo.h5">XOR и Сдвиг Битового Кода</MudText>
         </MudItem>
+
         <MudItem xs="12">
-            <MudTextField @bind-Value="Code" Label="Введите код" Type="number" />
+            <MudTabs @bind-ActivePanelIndex="ActiveTabIndex">
+                <MudTabPanel Text="Символ">
+                    <MudTextField @bind-Value="InputSymbol" Label="Введите символ" />
+                </MudTabPanel>
+                <MudTabPanel Text="ALT-код">
+                    <MudNumericField @bind-Value="InputAltCode" Label="Введите ALT-код" />
+                </MudTabPanel>
+                <MudTabPanel Text="Слово">
+                    <MudTextField @bind-Value="InputWord" Label="Введите слово" />
+                </MudTabPanel>
+            </MudTabs>
+            <MudNumericField @bind-Value="NumberOfRounds" Label="Количество раундов" Min="1" />
+            <MudTextField @bind-Value="KeyShifts" Label="Смещения ключа (через пробел)" />
+            <MudText Typo="Typo.body2" Color="Color.Info">
+                Введите положительные значения для сдвига вправо и отрицательные для сдвига влево.
+            </MudText>
             <MudButton OnClick="Encrypt" Color="Color.Primary">Выполнить</MudButton>
         </MudItem>
+
         <MudItem xs="12">
-            <MudText Typo="Typo.body1">Результат:</MudText>
-            @foreach (string line in Result.Split("\n"))
-            {
-                <MudText Typo="Typo.body2">@line</MudText>
-            }
+            <MudTabs @bind-ActivePanelIndex="ResultTabIndex">
+                @foreach (KeyValuePair<string, string> result in Results)
+                {
+                    <MudTabPanel Text="@result.Key">
+                        <MudText Typo="Typo.body1">Результат:</MudText>
+                        @foreach (string line in result.Value.Split("\n"))
+                        {
+                            <MudText Typo="Typo.body2">@line</MudText>
+                        }
+                    </MudTabPanel>
+                }
+            </MudTabs>
         </MudItem>
     </MudGrid>
 </MudContainer>
 
 @code {
-    private string Result { get; set; } = string.Empty;
+    private Dictionary<string, string> Results { get; } = new();
+    public string InputSymbol { get; set; } = string.Empty;
+    public string InputAltCode { get; set; } = string.Empty;
+    public string InputWord { get; set; } = string.Empty;
+    public int ActiveTabIndex { get; set; } = 2;
+    public int ResultTabIndex { get; set; }
+    public int NumberOfRounds { get; set; } = 2;
+    public string KeyShifts { get; set; } = "1 1";
+
+    [Inject]
+    private HttpClient Client { get; set; }
+
+    private readonly Dictionary<int, char> altCodes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAltCodesAsync();
+    }
+
+    private async Task LoadAltCodesAsync()
+    {
+        string fileContent = await Client.GetStringAsync("data/alt-codes.txt");
+        string[] lines = fileContent.Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string line in lines)
+        {
+            string[] parts = line.Split(' ');
+
+            if (parts.Length == 2 && int.TryParse(parts[0], out int code))
+            {
+                altCodes[code] = parts[1][0];
+            }
+        }
+    }
 
     private string Shift(string a, int n)
     {
         n = n % a.Length;
-        return a.Substring(a.Length - n) + a.Substring(0, a.Length - n);
-    }
 
-    private string ShiftLeft(string a, int n)
-    {
-        n = n % a.Length;
-        return a.Substring(n) + a.Substring(0, n);
+        if (n < 0)
+        {
+            n = a.Length + n;
+        }
+
+        return a.Substring(a.Length - n) + a.Substring(0, a.Length - n);
     }
 
     private string XorStrings(string a, string b)
@@ -41,39 +98,91 @@
 
     private void Encrypt()
     {
-        int code = Code;
-        Result = $"Изначальный код, k = {code}\n";
-        string binCode = Convert.ToString(code, 2).PadLeft(8, '0');
-        Result += "Код в 2СС: " + binCode + "\n";
-        int k1 = 1;
-        Result += $"Первый раунд, k = {k1}\n";
-        string leftHalf = binCode.Substring(0, 4);
-        Result += $"Левая часть = {leftHalf}\n";
-        string rightHalf = binCode.Substring(4);
-        Result += $"Правая часть = {rightHalf}\n";
-        string shiftedLeftHalf = Shift(leftHalf, k1);
-        Result += $"Сдвигаем левую часть на k = {k1} ..\n";
-        Result += $"Результат сдвига = {shiftedLeftHalf}\n";
-        Result += "Выполняем XOR с правой частью..\n";
-        rightHalf = XorStrings(shiftedLeftHalf, rightHalf);
-        Result += $"Результат XOR = {rightHalf}\n";
-        (leftHalf, rightHalf) = (rightHalf, leftHalf);
-        Result += "Результат первого раунда: " + leftHalf + rightHalf + "\n";
-        Result += "------------\n";
-        int k2 = 1;
-        Result += $"Финальный раунд: k = {k2}\n";
-        Result += $"Левая часть = {leftHalf}\n";
-        Result += $"Правая часть = {rightHalf}\n";
-        Result += $"Сдвигаем левую часть на k = {k2} ..\n";
-        string shLeftHalf = Shift(leftHalf, k2);
-        Result += $"Результат сдвига = {shLeftHalf}\n";
-        Result += "Выполняем XOR с правой частью..\n";
-        rightHalf = XorStrings(shLeftHalf, rightHalf);
-        Result += $"Результат XOR = {rightHalf}\n";
-        Result += "Результат финального раунда: " + leftHalf + rightHalf + "\n";
-        int finalResult = Convert.ToInt32(leftHalf + rightHalf, 2);
-        Result += $"Новый код символа: {finalResult}\n";
+        Results.Clear();
+
+        if (ActiveTabIndex == 0)
+        {
+            if (InputSymbol.Length != 1)
+            {
+                Results["Ошибка"] = "Ошибка: Введите только один символ.\n";
+                return;
+            }
+
+            ProcessSingleSymbol(altCodes.First(x => x.Value == InputSymbol[0]).Key, InputSymbol);
+        }
+        else if (ActiveTabIndex == 1)
+        {
+            if (!int.TryParse(InputAltCode, out int code) || !altCodes.ContainsKey(code))
+            {
+                Results["Ошибка"] = "Ошибка: Введите правильный ALT-код.\n";
+                return;
+            }
+
+            ProcessSingleSymbol(code, altCodes[code].ToString());
+        }
+        else if (ActiveTabIndex == 2)
+        {
+            if (string.IsNullOrWhiteSpace(InputWord))
+            {
+                Results["Ошибка"] = "Ошибка: Введите слово.\n";
+                return;
+            }
+
+            foreach (char c in InputWord)
+            {
+                ProcessSingleSymbol(altCodes.First(x => x.Value == c).Key, c.ToString());
+            }
+        }
     }
 
-    public int Code { get; set; }
+    private void ProcessSingleSymbol(int code, string symbol)
+    {
+        string result = string.Empty;
+        result += $"Символ: {symbol}\n";
+        result += $"Его ALT-код: {code}\n";
+
+        result += $"Изначальный код, k = {code}\n";
+        string binCode = Convert.ToString(code, 2).PadLeft(8, '0');
+        result += "Код в 2СС: " + binCode + "\n";
+
+        string leftHalf = binCode.Substring(0, 4);
+        string rightHalf = binCode.Substring(4);
+
+        List<int> keyShifts = KeyShifts.Split(' ').Select(int.Parse).ToList();
+
+        for (int i = 0; i < NumberOfRounds; i++)
+        {
+            int k = keyShifts[i % keyShifts.Count];
+            result += $"Раунд {i + 1}, k = {k}\n";
+            result += $"Левая часть = {leftHalf}\n";
+            result += $"Правая часть = {rightHalf}\n";
+
+            string shiftedLeftHalf = Shift(leftHalf, k);
+            result += $"Сдвигаем левую часть на k = {k} ..\n";
+            result += $"Результат сдвига = {shiftedLeftHalf}\n";
+
+            result += "Выполняем XOR с правой частью..\n";
+            rightHalf = XorStrings(shiftedLeftHalf, rightHalf);
+            result += $"Результат XOR = {rightHalf}\n";
+
+            if (i != NumberOfRounds - 1)
+            {
+                (leftHalf, rightHalf) = (rightHalf, leftHalf);
+            }
+
+            result += "Результат раунда: " + leftHalf + rightHalf + "\n";
+            result += "------------\n";
+        }
+
+        string finalBinaryResult = leftHalf + rightHalf;
+        result += "Результат финального раунда: " + finalBinaryResult + "\n";
+
+        int finalResult = Convert.ToInt32(finalBinaryResult, 2);
+        char finalChar = altCodes[finalResult];
+
+        result += $"Новый код символа: {finalResult} (ALT-код: {finalResult}, Символ: {finalChar})\n";
+
+        Results[symbol] = result;
+    }
+
 }
