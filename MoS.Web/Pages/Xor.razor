@@ -23,7 +23,8 @@
             <MudText Typo="Typo.body2" Color="Color.Info">
                 Введите положительные значения для сдвига вправо и отрицательные для сдвига влево.
             </MudText>
-            <MudButton OnClick="Encrypt" Color="Color.Primary">Выполнить</MudButton>
+            <MudSwitch Color="Color.Success" UncheckedColor="Color.Error" @bind-Value="IsEncryptMode" Label="@(IsEncryptMode ? "Шифрование" : "Дешифрование")" />
+            <MudButton OnClick="Process" Color="Color.Primary">Выполнить</MudButton>
         </MudItem>
 
         <MudItem xs="12">
@@ -52,6 +53,7 @@
     public int ResultTabIndex { get; set; }
     public int NumberOfRounds { get; set; } = 2;
     public string KeyShifts { get; set; } = "1 1";
+    public bool IsEncryptMode { get; set; }
 
     [Inject]
     private HttpClient Client { get; set; }
@@ -96,7 +98,7 @@
         return string.Concat(a.Zip(b, (x, y) => (int.Parse(x.ToString()) ^ int.Parse(y.ToString())).ToString()));
     }
 
-    private void Encrypt()
+    private void Process()
     {
         Results.Clear();
 
@@ -149,6 +151,11 @@
         string rightHalf = binCode.Substring(4);
 
         List<int> keyShifts = KeyShifts.Split(' ').Select(int.Parse).ToList();
+
+        if (!IsEncryptMode)
+        {
+            keyShifts.Reverse();
+        }
 
         for (int i = 0; i < NumberOfRounds; i++)
         {
