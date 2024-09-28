@@ -1,15 +1,13 @@
 ﻿@page "/xor-shift"
 
 <MudContainer>
-    <MudGrid>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h5">XOR и Сдвиг Битового Кода</MudText>
-        </MudItem>
+    <MudStack Spacing="6">
+        <MudText Typo="Typo.h5">Симметричное шифрование</MudText>
 
-        <MudItem xs="12">
-            <MudTabs @bind-ActivePanelIndex="ActiveTabIndex">
+        <MudStack Spacing="3">
+            <MudTabs MinimumTabWidth="20px" @bind-ActivePanelIndex="ActiveTabIndex">
                 <MudTabPanel Text="Символ">
-                    <MudTextField @bind-Value="InputSymbol" Label="Введите символ" />
+                    <MudTextField @bind-Value="InputSymbol" Label="Введите символ" MaxLength="1" />
                 </MudTabPanel>
                 <MudTabPanel Text="ALT-код">
                     <MudNumericField @bind-Value="InputAltCode" Label="Введите ALT-код" />
@@ -24,24 +22,22 @@
                 Введите положительные значения для сдвига вправо и отрицательные для сдвига влево.
             </MudText>
             <MudSwitch Color="Color.Success" UncheckedColor="Color.Error" @bind-Value="IsEncryptMode" Label="@(IsEncryptMode ? "Шифрование" : "Дешифрование")" />
-            <MudButton OnClick="Process" Color="Color.Primary">Выполнить</MudButton>
-        </MudItem>
+            <MudButton OnClick="Process" Variant="Variant.Filled" Color="Color.Primary">Выполнить</MudButton>
+        </MudStack>
 
-        <MudItem xs="12">
-            <MudTabs @bind-ActivePanelIndex="ResultTabIndex">
-                @foreach (KeyValuePair<string, string> result in Results)
-                {
-                    <MudTabPanel Text="@result.Key">
-                        <MudText Typo="Typo.body1">Результат:</MudText>
-                        @foreach (string line in result.Value.Split("\n"))
-                        {
-                            <MudText Typo="Typo.body2">@line</MudText>
-                        }
-                    </MudTabPanel>
-                }
-            </MudTabs>
-        </MudItem>
-    </MudGrid>
+        <MudTabs MinimumTabWidth="20px" @bind-ActivePanelIndex="ResultTabIndex">
+            @foreach (KeyValuePair<string, string> result in Results)
+            {
+                <MudTabPanel Text="@result.Key">
+                    <MudText Typo="Typo.body1">Результат:</MudText>
+                    @foreach (string line in result.Value.Split("\n"))
+                    {
+                        <MudText Typo="Typo.body2">@line</MudText>
+                    }
+                </MudTabPanel>
+            }
+        </MudTabs>
+    </MudStack>
 </MudContainer>
 
 @code {
@@ -100,40 +96,47 @@
 
     private void Process()
     {
-        Results.Clear();
-
-        if (ActiveTabIndex == 0)
+        try
         {
-            if (InputSymbol.Length != 1)
-            {
-                Results["Ошибка"] = "Ошибка: Введите только один символ.\n";
-                return;
-            }
+            Results.Clear();
 
-            ProcessSingleSymbol(altCodes.First(x => x.Value == InputSymbol[0]).Key, InputSymbol);
+            if (ActiveTabIndex == 0)
+            {
+                if (InputSymbol.Length != 1)
+                {
+                    Results["Ошибка"] = "Ошибка: Введите только один символ.\n";
+                    return;
+                }
+
+                ProcessSingleSymbol(altCodes.First(x => x.Value == InputSymbol[0]).Key, InputSymbol);
+            }
+            else if (ActiveTabIndex == 1)
+            {
+                if (!int.TryParse(InputAltCode, out int code) || !altCodes.ContainsKey(code))
+                {
+                    Results["Ошибка"] = "Ошибка: Введите правильный ALT-код.\n";
+                    return;
+                }
+
+                ProcessSingleSymbol(code, altCodes[code].ToString());
+            }
+            else if (ActiveTabIndex == 2)
+            {
+                if (string.IsNullOrWhiteSpace(InputWord))
+                {
+                    Results["Ошибка"] = "Ошибка: Введите слово.\n";
+                    return;
+                }
+
+                foreach (char c in InputWord)
+                {
+                    ProcessSingleSymbol(altCodes.FirstOrDefault(x => x.Value == c).Key, c.ToString());
+                }
+            }
         }
-        else if (ActiveTabIndex == 1)
+        catch (Exception)
         {
-            if (!int.TryParse(InputAltCode, out int code) || !altCodes.ContainsKey(code))
-            {
-                Results["Ошибка"] = "Ошибка: Введите правильный ALT-код.\n";
-                return;
-            }
-
-            ProcessSingleSymbol(code, altCodes[code].ToString());
-        }
-        else if (ActiveTabIndex == 2)
-        {
-            if (string.IsNullOrWhiteSpace(InputWord))
-            {
-                Results["Ошибка"] = "Ошибка: Введите слово.\n";
-                return;
-            }
-
-            foreach (char c in InputWord)
-            {
-                ProcessSingleSymbol(altCodes.First(x => x.Value == c).Key, c.ToString());
-            }
+            Results["Ошибка"] = "Ошибка: Введите правильный ALT-код.\n";
         }
     }
 
