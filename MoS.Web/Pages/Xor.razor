@@ -86,13 +86,9 @@
             n = a.Length + n;
         }
 
-        return a.Substring(a.Length - n) + a.Substring(0, a.Length - n);
+        return a[^n..] + a[..^n];
     }
 
-    private string XorStrings(string a, string b)
-    {
-        return string.Concat(a.Zip(b, (x, y) => (int.Parse(x.ToString()) ^ int.Parse(y.ToString())).ToString()));
-    }
 
     private void Process()
     {
@@ -134,9 +130,10 @@
                 }
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             Results["Ошибка"] = "Ошибка: Введите правильный ALT-код.\n";
+            Console.WriteLine(exception.Message);
         }
     }
 
@@ -150,8 +147,8 @@
         string binCode = Convert.ToString(code, 2).PadLeft(8, '0');
         result += "Код в 2СС: " + binCode + "\n";
 
-        string leftHalf = binCode.Substring(0, 4);
-        string rightHalf = binCode.Substring(4);
+        var leftHalf = ((code >> 4) & 0x0F);
+        var rightHalf = (code & 0x0F);
 
         List<int> keyShifts = KeyShifts.Split(' ').Select(int.Parse).ToList();
 
@@ -160,39 +157,45 @@
             keyShifts.Reverse();
         }
 
+        result += "------------\n";
+
         for (int i = 0; i < NumberOfRounds; i++)
         {
             int k = keyShifts[i % keyShifts.Count];
             result += $"Раунд {i + 1}, k = {k}\n";
-            result += $"Левая часть = {leftHalf}\n";
-            result += $"Правая часть = {rightHalf}\n";
+            result += $"Левая часть = {To2(leftHalf)}\n";
+            result += $"Правая часть = {To2(rightHalf)}\n";
 
-            string shiftedLeftHalf = Shift(leftHalf, k);
+            var shiftedLeftHalf = int.Parse(Shift(To2(leftHalf), k));
             result += $"Сдвигаем левую часть на k = {k} ..\n";
-            result += $"Результат сдвига = {shiftedLeftHalf}\n";
+            result += $"Результат сдвига = {To2(shiftedLeftHalf)}\n";
 
             result += "Выполняем XOR с правой частью..\n";
-            rightHalf = XorStrings(shiftedLeftHalf, rightHalf);
-            result += $"Результат XOR = {rightHalf}\n";
+            rightHalf = (shiftedLeftHalf ^ rightHalf);
+            result += $"Результат XOR = {To2(rightHalf)}\n";
 
             if (i != NumberOfRounds - 1)
             {
                 (leftHalf, rightHalf) = (rightHalf, leftHalf);
             }
 
-            result += "Результат раунда: " + leftHalf + rightHalf + "\n";
+            result += "Результат раунда: " + To2((leftHalf << 4) | rightHalf) + "\n";
             result += "------------\n";
         }
 
-        string finalBinaryResult = leftHalf + rightHalf;
-        result += "Результат финального раунда: " + finalBinaryResult + "\n";
+        var finalResult = (leftHalf << 4) | rightHalf;
+        result += "Результат финального раунда: " + To2(finalResult) + "\n";
 
-        int finalResult = Convert.ToInt32(finalBinaryResult, 2);
-        char finalChar = altCodes[finalResult];
+        char? finalChar = altCodes.GetValueOrDefault(finalResult);
 
         result += $"Новый код символа: {finalResult} (ALT-код: {finalResult}, Символ: {finalChar})\n";
 
         Results[symbol] = result;
+    }
+
+    public static string To2(int x)
+    {
+        return Convert.ToString(x, 2).PadLeft(4, '0');
     }
 
 }
