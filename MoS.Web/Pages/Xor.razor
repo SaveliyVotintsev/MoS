@@ -25,6 +25,25 @@
             <MudButton OnClick="Process" Variant="Variant.Filled" Color="Color.Primary">Выполнить</MudButton>
         </MudStack>
 
+        <MudTable Items="Table" Breakpoint="Breakpoint.None">
+            <HeaderContent>
+                <MudTh>Символ</MudTh>
+                <MudTh>ALT-код</MudTh>
+                <MudTh>Исходный код (2СС)</MudTh>
+                <MudTh>Результат (2СС)</MudTh>
+                <MudTh>ALT-код</MudTh>
+                <MudTh>Символ</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Symbol</MudTd>
+                <MudTd>@context.Code</MudTd>
+                <MudTd>@context.BinCode</MudTd>
+                <MudTd>@context.S</MudTd>
+                <MudTd>@context.FinalResult</MudTd>
+                <MudTd>@(context.FinalChar?.ToString() ?? "-")</MudTd>
+            </RowTemplate>
+        </MudTable>
+
         <MudTabs MinimumTabWidth="20px" @bind-ActivePanelIndex="ResultTabIndex">
             @foreach (KeyValuePair<string, string> result in Results)
             {
@@ -86,7 +105,7 @@
             n = a.Length + n;
         }
 
-        return a.Substring(a.Length - n) + a.Substring(0, a.Length - n);
+        return a[^n..] + a[..^n];
     }
 
     private string XorStrings(string a, string b)
@@ -99,6 +118,7 @@
         try
         {
             Results.Clear();
+            Table.Clear();
 
             if (ActiveTabIndex == 0)
             {
@@ -160,6 +180,8 @@
             keyShifts.Reverse();
         }
 
+        result += "------------\n";
+
         for (int i = 0; i < NumberOfRounds; i++)
         {
             int k = keyShifts[i % keyShifts.Count];
@@ -191,8 +213,17 @@
         char finalChar = altCodes[finalResult];
 
         result += $"Новый код символа: {finalResult} (ALT-код: {finalResult}, Символ: {finalChar})\n";
-
+        Table.Add(new Calc(symbol, code, binCode, To2(finalResult), finalResult, finalChar));
         Results[symbol] = result;
+    }
+
+    private readonly List<Calc> Table = new();
+
+    private record Calc(string Symbol, int Code, string BinCode, string S, int FinalResult, char? FinalChar);
+
+    public static string To2(int x)
+    {
+        return Convert.ToString(x, 2).PadLeft(4, '0');
     }
 
 }
