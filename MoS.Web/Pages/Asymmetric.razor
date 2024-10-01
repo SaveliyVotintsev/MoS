@@ -54,8 +54,8 @@
     <RowTemplate>
         <MudTd DataLabel="Modulus (n)">@context.Modulus</MudTd>
         <MudTd DataLabel="Phi (φ)">@context.Phi</MudTd>
-        <MudTd DataLabel="k">@context.D</MudTd>
-        <MudTd DataLabel="k">@context.PrivateKey</MudTd>
+        <MudTd DataLabel="D">@context.D</MudTd>
+        <MudTd DataLabel="e">@context.PublicKey</MudTd>
         <MudTd DataLabel="k">@context.K</MudTd>
         <MudTd DataLabel="Открытый ключ">@("{ " + context.Modulus + ", " + context.PublicKey + " }")</MudTd>
         <MudTd DataLabel="Закрытый ключ">@("{ " + context.Modulus + ", " + context.PrivateKey + " }")</MudTd>
