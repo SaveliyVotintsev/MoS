@@ -2,28 +2,23 @@
 
 <MudGrid>
     <MudItem xs="12" sm="6">
-        <MudTooltip Text="Введите простое число, например, 23 или 29.">
-            <MudTextField @bind-Value="PrimeP" Label="Введите простое число P" Variant="Variant.Filled" />
-        </MudTooltip>
+        <MudTextField FullWidth @bind-Value="PrimeP" Label="Простое число P" Variant="Variant.Filled" />
     </MudItem>
     <MudItem xs="12" sm="6">
-        <MudTooltip Text="Введите простое число, например, 17 или 31.">
-            <MudTextField @bind-Value="PrimeQ" Label="Введите простое число Q" Variant="Variant.Filled" />
-        </MudTooltip>
+        <MudTextField FullWidth @bind-Value="PrimeQ" Label="Простое число Q" Variant="Variant.Filled" />
     </MudItem>
 
     <MudItem xs="12" sm="6">
-        <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное значение k: @KMin.ToString()</MudSlider>
+        <MudStack>
+            <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное k: @KMin.ToString()</MudSlider>
+            <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное k: @KMax.ToString()</MudSlider>
+        </MudStack>
     </MudItem>
     <MudItem xs="12" sm="6">
-        <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное значение e (нечетное): @EMin.ToString()</MudSlider>
-    </MudItem>
-
-    <MudItem xs="12" sm="6">
-        <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное значение k: @KMax.ToString()</MudSlider>
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное значение e (нечетное): @EMax.ToString()</MudSlider>
+        <MudStack>
+            <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное e: @EMin.ToString()</MudSlider>
+            <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное e: @EMax.ToString()</MudSlider>
+        </MudStack>
     </MudItem>
 </MudGrid>
 
