@@ -1,0 +1,65 @@
+﻿@page "/asymmetric"
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudTooltip Text="Введите простое число, например, 23 или 29.">
+            <MudTextField @bind-Value="PrimeP" Label="Введите простое число P" Variant="Variant.Filled" />
+        </MudTooltip>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTooltip Text="Введите простое число, например, 17 или 31.">
+            <MudTextField @bind-Value="PrimeQ" Label="Введите простое число Q" Variant="Variant.Filled" />
+        </MudTooltip>
+    </MudItem>
+
+    <MudItem xs="12" sm="6">
+        <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное значение k: @KMin.ToString()</MudSlider>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное значение e (нечетное): @EMin.ToString()</MudSlider>
+    </MudItem>
+
+    <MudItem xs="12" sm="6">
+        <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное значение k: @KMax.ToString()</MudSlider>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное значение e (нечетное): @EMax.ToString()</MudSlider>
+    </MudItem>
+</MudGrid>
+
+<MudButton OnClick="CalculateKeys" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Нажми</MudButton>
+
+<MudProgressLinear Value="@_progress" Buffer="true" Color="Color.Success" Class="my-2" />
+
+<MudTable Items="_results" Striped Breakpoint="Breakpoint.None" FixedHeader SortLabel="Sort By">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Modulus)">Modulus (n)</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Phi)">Phi (φ)</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.D)">d</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.PrivateKey)">e</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.K)">k</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Открытый ключ</MudTh>
+        <MudTh>Закрытый ключ</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Modulus (n)">@context.Modulus</MudTd>
+        <MudTd DataLabel="Phi (φ)">@context.Phi</MudTd>
+        <MudTd DataLabel="k">@context.D</MudTd>
+        <MudTd DataLabel="k">@context.PrivateKey</MudTd>
+        <MudTd DataLabel="k">@context.K</MudTd>
+        <MudTd DataLabel="Открытый ключ">@("{ " + context.Modulus + ", " + context.PublicKey + " }")</MudTd>
+        <MudTd DataLabel="Закрытый ключ">@("{ " + context.Modulus + ", " + context.PrivateKey + " }")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudText Color="Color.Error">@_errorMessage</MudText>
