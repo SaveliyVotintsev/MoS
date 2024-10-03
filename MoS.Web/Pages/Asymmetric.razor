@@ -1,32 +1,34 @@
 ﻿@page "/asymmetric"
 
 <MudGrid>
-    <MudItem xs="12" sm="6">
-        <MudTextField FullWidth @bind-Value="PrimeP" Label="Простое число P" Variant="Variant.Filled" />
+    <AsymmetricCrypt />
+
+    <MudItem sm="6" xs="12">
+        <MudTextField @bind-Value="PrimeP" FullWidth Label="Простое число P" Variant="Variant.Filled" />
     </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField FullWidth @bind-Value="PrimeQ" Label="Простое число Q" Variant="Variant.Filled" />
+    <MudItem sm="6" xs="12">
+        <MudTextField @bind-Value="PrimeQ" FullWidth Label="Простое число Q" Variant="Variant.Filled" />
     </MudItem>
 
-    <MudItem xs="12" sm="6">
+    <MudItem sm="6" xs="12">
         <MudStack>
-            <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное k: @KMin.ToString()</MudSlider>
-            <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное k: @KMax.ToString()</MudSlider>
+            <MudSlider @bind-Value="KMin" Color="Color.Error" Max="100" Min="1">Минимальное k: @KMin.ToString()</MudSlider>
+            <MudSlider @bind-Value="KMax" Color="Color.Info" Max="100" Min="1">Максимальное k: @KMax.ToString()</MudSlider>
         </MudStack>
     </MudItem>
     <MudItem xs="12" sm="6">
         <MudStack>
-            <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное e: @EMin.ToString()</MudSlider>
-            <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное e: @EMax.ToString()</MudSlider>
+            <MudSlider @bind-Value="EMin" Color="Color.Error" Max="99" Min="3" Step="2">Минимальное e: @EMin.ToString()</MudSlider>
+            <MudSlider @bind-Value="EMax" Color="Color.Info" Max="99" Min="3" Step="2">Максимальное e: @EMax.ToString()</MudSlider>
         </MudStack>
     </MudItem>
 </MudGrid>
 
-<MudButton OnClick="CalculateKeys" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Нажми</MudButton>
+<MudButton Class="mt-4" Color="Color.Primary" OnClick="CalculateKeys" Variant="Variant.Filled">Нажми</MudButton>
 
-<MudProgressLinear Value="@_progress" Buffer="true" Color="Color.Success" Class="my-2" />
+<MudProgressLinear Buffer Class="my-2" Color="Color.Success" Value="@_progress" />
 
-<MudTable Items="_results" Striped Breakpoint="Breakpoint.None" FixedHeader SortLabel="Sort By">
+<MudTable Breakpoint="Breakpoint.None" FixedHeader Items="_results" SortLabel="Sort By" Striped>
     <HeaderContent>
         <MudTh>
             <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Modulus)">Modulus (n)</MudTableSortLabel>
@@ -52,8 +54,8 @@
         <MudTd DataLabel="D">@context.D</MudTd>
         <MudTd DataLabel="e">@context.PublicKey</MudTd>
         <MudTd DataLabel="k">@context.K</MudTd>
-        <MudTd DataLabel="Открытый ключ">@("{ " + context.Modulus + ", " + context.PublicKey + " }")</MudTd>
-        <MudTd DataLabel="Закрытый ключ">@("{ " + context.Modulus + ", " + context.PrivateKey + " }")</MudTd>
+        <MudTd DataLabel="Открытый ключ">@($"{{ {context.Modulus}, {context.PublicKey} }}")</MudTd>
+        <MudTd DataLabel="Закрытый ключ">@($"{{ {context.Modulus}, {context.PrivateKey} }}")</MudTd>
     </RowTemplate>
 </MudTable>
 

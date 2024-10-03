@@ -1,0 +1,27 @@
+﻿@using System.Text
+<MudItem xs="12">
+    <MudTextField FullWidth @bind-Value="PublicKeyModulus" Label="Modulus (Public Key)" Variant="Variant.Filled" />
+    <MudTextField FullWidth @bind-Value="PublicKeyExponent" Label="Exponent (Public Key)" Variant="Variant.Filled" />
+</MudItem>
+
+<MudItem xs="12">
+    <MudTextField FullWidth @bind-Value="PrivateKeyModulus" Label="Modulus (Private Key)" Variant="Variant.Filled" />
+    <MudTextField FullWidth @bind-Value="PrivateKeyExponent" Label="Exponent (Private Key)" Variant="Variant.Filled" />
+</MudItem>
+
+<MudItem xs="12">
+    <MudTextField FullWidth @bind-Value="Plaintext" Label="Text for Encryption" Variant="Variant.Filled" />
+</MudItem>
+<MudItem xs="12">
+    <MudTextField FullWidth @bind-Value="Ciphertext" Label="Text for Decryption" Variant="Variant.Filled" />
+</MudItem>
+
+<MudItem xs="12">
+    <MudButton OnClick="Encrypt" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Encrypt</MudButton>
+    <MudButton OnClick="Decrypt" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4">Decrypt</MudButton>
+</MudItem>
+
+<MudItem xs="12">
+    <MudText Color="Color.Success">Encryption Result: @EncryptedResult</MudText>
+    <MudText Color="Color.Info">Decryption Result: @DecryptedResult</MudText>
+</MudItem>
