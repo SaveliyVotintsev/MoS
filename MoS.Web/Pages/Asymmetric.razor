@@ -1,60 +1,197 @@
 ﻿@page "/asymmetric"
-
-<MudGrid>
-    <MudItem xs="12" sm="6">
-        <MudTextField FullWidth @bind-Value="PrimeP" Label="Простое число P" Variant="Variant.Filled" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField FullWidth @bind-Value="PrimeQ" Label="Простое число Q" Variant="Variant.Filled" />
-    </MudItem>
-
-    <MudItem xs="12" sm="6">
-        <MudStack>
-            <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное k: @KMin.ToString()</MudSlider>
-            <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное k: @KMax.ToString()</MudSlider>
-        </MudStack>
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudStack>
-            <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное e: @EMin.ToString()</MudSlider>
-            <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное e: @EMax.ToString()</MudSlider>
-        </MudStack>
-    </MudItem>
-</MudGrid>
-
-<MudButton OnClick="CalculateKeys" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Нажми</MudButton>
-
-<MudProgressLinear Value="@_progress" Buffer="true" Color="Color.Success" Class="my-2" />
-
-<MudTable Items="_results" Striped Breakpoint="Breakpoint.None" FixedHeader SortLabel="Sort By">
-    <HeaderContent>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Modulus)">Modulus (n)</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Phi)">Phi (φ)</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.D)">d</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.PrivateKey)">e</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.K)">k</MudTableSortLabel>
-        </MudTh>
-        <MudTh>Открытый ключ</MudTh>
-        <MudTh>Закрытый ключ</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Modulus (n)">@context.Modulus</MudTd>
-        <MudTd DataLabel="Phi (φ)">@context.Phi</MudTd>
-        <MudTd DataLabel="D">@context.D</MudTd>
-        <MudTd DataLabel="e">@context.PublicKey</MudTd>
-        <MudTd DataLabel="k">@context.K</MudTd>
-        <MudTd DataLabel="Открытый ключ">@("{ " + context.Modulus + ", " + context.PublicKey + " }")</MudTd>
-        <MudTd DataLabel="Закрытый ключ">@("{ " + context.Modulus + ", " + context.PrivateKey + " }")</MudTd>
-    </RowTemplate>
-</MudTable>
+@using System.Text
 
 <MudText Color="Color.Error">@_errorMessage</MudText>
+
+<MudTabs>
+    <MudTabPanel Text="Ключи">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField FullWidth @bind-Value="PrimeP" Label="Простое число P" Variant="Variant.Filled" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField FullWidth @bind-Value="PrimeQ" Label="Простое число Q" Variant="Variant.Filled" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudStack>
+                    <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное k: @KMin.ToString()</MudSlider>
+                    <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное k: @KMax.ToString()</MudSlider>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudStack>
+                    <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное e: @EMin.ToString()</MudSlider>
+                    <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное e: @EMax.ToString()</MudSlider>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+
+        <MudButton OnClick="CalculateKeys" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Нажми</MudButton>
+
+        <MudProgressLinear Value="@_progress" Buffer="true" Color="Color.Success" Class="my-2" />
+
+        <MudTable Items="_results" Striped Breakpoint="Breakpoint.None" FixedHeader SortLabel="Sort By">
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Modulus)">Modulus (n)</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Phi)">Phi (φ)</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.D)">d</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.PublicKey)">e</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.K)">k</MudTableSortLabel>
+                </MudTh>
+                <MudTh>Открытый ключ</MudTh>
+                <MudTh>Закрытый ключ</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Modulus (n)">@context.Modulus</MudTd>
+                <MudTd DataLabel="Phi (φ)">@context.Phi</MudTd>
+                <MudTd DataLabel="D">@context.D</MudTd>
+                <MudTd DataLabel="e">@context.PublicKey</MudTd>
+                <MudTd DataLabel="k">@context.K</MudTd>
+                <MudTd DataLabel="Открытый ключ">@("{ " + context.Modulus + ", " + context.PublicKey + " }")</MudTd>
+                <MudTd DataLabel="Закрытый ключ">@("{ " + context.Modulus + ", " + context.PrivateKey + " }")</MudTd>
+            </RowTemplate>
+        </MudTable>
+
+    </MudTabPanel>
+
+    <MudTabPanel Text="Шифрование/Дешифрование">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField FullWidth @bind-Value="PublicKeyModulus" Label="Modulus (Public Key)" Variant="Variant.Filled" />
+                <MudTextField FullWidth @bind-Value="PublicKeyExponent" Label="Exponent (Public Key)" Variant="Variant.Filled" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField FullWidth @bind-Value="PrivateKeyModulus" Label="Modulus (Private Key)" Variant="Variant.Filled" />
+                <MudTextField FullWidth @bind-Value="PrivateKeyExponent" Label="Exponent (Private Key)" Variant="Variant.Filled" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField FullWidth @bind-Value="InputText" Label="Текст для шифрования/дешифрования" Variant="Variant.Filled" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudButton OnClick="Encrypt" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Зашифровать</MudButton>
+                <MudButton OnClick="Decrypt" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4">Расшифровать</MudButton>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField FullWidth @bind-Value="EncryptedText" Label="Зашифрованный текст" Variant="Variant.Filled" ReadOnly />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField FullWidth @bind-Value="DecryptedText" Label="Расшифрованный текст" Variant="Variant.Filled" ReadOnly />
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+
+@code
+{
+    public string PublicKeyModulus { get; set; } = "667";
+    public string PublicKeyExponent { get; set; } = "9";
+    public string PrivateKeyModulus { get; set; } = "667";
+    public string PrivateKeyExponent { get; set; } = "137";
+    private string InputText { get; set; }
+    private string EncryptedText { get; set; }
+    private string DecryptedText { get; set; }
+
+    [Inject]
+    private HttpClient Client { get; set; } = default!;
+
+    private readonly Dictionary<int, char> _altCodes = new();
+
+    public void Decrypt()
+    {
+        try
+        {
+            if (!BigInteger.TryParse(PrivateKeyModulus, out BigInteger modulus) || !BigInteger.TryParse(PrivateKeyExponent, out BigInteger exponent))
+            {
+                _errorMessage = "Invalid public key.";
+                return;
+            }
+
+            BigInteger.TryParse(InputText, out BigInteger plaintextInt);
+            //byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(array);
+            //BigInteger plaintextInt = new(bytesToEncrypt);
+            BigInteger encrypted = BigInteger.ModPow(plaintextInt, exponent, modulus);
+            DecryptedText = encrypted.ToString();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error in encryption: {ex.Message}";
+        }
+    }
+
+    public void Encrypt()
+    {
+        try
+        {
+            if (!BigInteger.TryParse(PublicKeyModulus, out BigInteger modulus) || !BigInteger.TryParse(PublicKeyExponent, out BigInteger exponent))
+            {
+                _errorMessage = "Invalid public key.";
+                return;
+            }
+
+            int[] array = InputText.Select(x => _altCodes.First(y => y.Value == 'я').Key).ToArray();
+            BigInteger.TryParse(string.Join("", array), out BigInteger plaintextInt);
+            //byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(array);
+            //BigInteger plaintextInt = new(bytesToEncrypt);
+            BigInteger encrypted = BigInteger.ModPow(plaintextInt, exponent, modulus);
+            EncryptedText = encrypted.ToString();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error in encryption: {ex.Message}";
+        }
+    }
+
+    /*public void Decrypt()
+    {
+        try
+        {
+            if (!BigInteger.TryParse(PrivateKeyModulus, out BigInteger modulus) || !BigInteger.TryParse(PrivateKeyExponent, out BigInteger exponent))
+            {
+                _errorMessage = "Invalid private key.";
+                return;
+            }
+
+            BigInteger encrypted = BigInteger.Parse(Ciphertext);
+            BigInteger decrypted = BigInteger.ModPow(encrypted, exponent, modulus);
+            byte[] decryptedBytes = decrypted.ToByteArray();
+            DecryptedResult = Encoding.UTF8.GetString(decryptedBytes);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error in decryption: {ex.Message}";
+        }
+    }*/
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAltCodesAsync();
+    }
+
+    private async Task LoadAltCodesAsync()
+    {
+        string fileContent = await Client.GetStringAsync("data/alt-codes.txt");
+        string[] lines = fileContent.Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string line in lines)
+        {
+            string[] parts = line.Split(' ');
+
+            if (parts.Length == 2 && int.TryParse(parts[0], out int code))
+            {
+                _altCodes[code] = parts[1][0];
+            }
+        }
+    }
+}
