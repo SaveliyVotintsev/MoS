@@ -1,239 +1,101 @@
 ﻿@page "/production-calculator/{loadDefaults:bool?}"
-
 <MudContainer>
-    <MudGrid>
-        <MudItem xs="12">
-            <MudText variant="h5">Калькулятор производственной мощности</MudText>
-        </MudItem>
+    <MudPaper Elevation="3" Class="pa-6">
+        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom>Калькулятор производственной мощности</MudText>
 
-        <MudItem xs="12">
-            <MudTextField @bind-Value="initialMachines" Label="Количество станков на начало года" Type="number" />
-        </MudItem>
+        <MudTabs Class="m-6" Elevation="0" @ref="tabs" SliderAnimation Centered>
+            <MudTabPanel Text="Основные данные">
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_newMachineDate" Label="Дата введения новых станков" />
+                        <MudNumericField @bind-Value="_newMachineCount" Label="Количество введенных станков" />
+                        <MudButton OnClick="AddNewMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
+                    </MudItem>
 
-        <MudItem xs="12">
-            <MudText variant="h6">Даты введения станков</MudText>
-            <MudDatePicker @bind-Date="newMachineDate" Label="Выберите дату введения" />
-            <MudTextField @bind-Value="newMachineCount" Label="Количество введенных станков" Type="number" />
-            <MudButton OnClick="AddNewMachineDate" Color="Color.Primary">Добавить дату</MudButton>
-            <MudList T="string">
-                @foreach (MachineEntry entry in newMachineDates)
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_removedMachineDate" Label="Дата выбытия станков" />
+                        <MudNumericField @bind-Value="_removedMachineCount" Label="Количество выбывших станков" />
+                        <MudButton OnClick="AddRemovedMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_initialMachines" Label="Количество станков на начало года" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudList T="string">
+                            @foreach (MachineEntry entry in _newMachineDates)
+                            {
+                                <MudListItem>
+                                    @entry.Date.ToShortDateString() + @entry.Count станков
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveNewMachineDate(entry)" />
+                                </MudListItem>
+                            }
+                        </MudList>
+                        <MudList T="string">
+                            @foreach (MachineEntry entry in _removedMachineDates)
+                            {
+                                <MudListItem>
+                                    @entry.Date.ToShortDateString() - @entry.Count станков
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveRemovedMachineDate(entry)" />
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Параметры">
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_workingDays" Label="Число рабочих дней в году" Format="N2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_downtimePercentage" Label="Процент простоев на ремонт" Format="N2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_productivityPerMachine" Label="Производительность 1 станка (деталей в час)" Format="N2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_plannedProduction" Label="План выпуска продукции за год" Format="N2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_shiftsCount" Label="Количество смен" Format="N2" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_shiftDuration" Label="Продолжительность смены (часов)" Format="N2" />
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+            <MudTabPanel Text="Результаты">
+                <MudStack Row>
+                    <MudButton OnClick="Calculate" Color="Color.Primary" FullWidth>Рассчитать</MudButton>
+                    <MudButton OnClick="ClearValues" Color="Color.Secondary" FullWidth>Очистить</MudButton>
+                    <MudButton OnClick="SetDefaultValues" Color="Color.Info" FullWidth>Установить значения из задачи</MudButton>
+                </MudStack>
+                @if (_result != null)
                 {
-                    <MudListItem>@entry.Date.ToShortDateString() - @entry.Count станков</MudListItem>
+                    <MudText Typo="Typo.h6">Производственная мощность: @_result.ProductionCapacity.ToString("N2") деталей</MudText>
+
+                    <MudText Typo="Typo.h6">Коэффициент использования мощности: @_result.UtilizationCoefficient.ToString($"F{Precision}")</MudText>
+
+                    <MudText Typo="Typo.h6" Class="mt-6">Шаги расчета:</MudText>
+
+                    <MudPaper Elevation="0" Class="pa-4">
+                        @foreach (string step in _calculationSteps)
+                        {
+                            if (char.IsDigit(step[0]))
+                            {
+                                <MudText Typo="Typo.h6" GutterBottom>@step</MudText>
+                            }
+                            else
+                            {
+                                <MudText>@step</MudText>
+                            }
+                        }
+                    </MudPaper>
                 }
-            </MudList>
-        </MudItem>
-
-        <MudItem xs="12">
-            <MudText variant="h6">Даты выбывания станков</MudText>
-            <MudDatePicker @bind-Date="removedMachineDate" Label="Выберите дату выбывания" />
-            <MudTextField @bind-Value="removedMachineCount" Label="Количество выбывших станков" Type="number" />
-            <MudButton OnClick="AddRemovedMachineDate" Color="Color.Primary">Добавить дату</MudButton>
-            <MudList T="string">
-                @foreach (MachineEntry entry in removedMachineDates)
-                {
-                    <MudListItem>@entry.Date.ToShortDateString() - @entry.Count станков</MudListItem>
-                }
-            </MudList>
-        </MudItem>
-
-        <MudItem xs="12">
-            <MudTextField @bind-Value="workingDays" Label="Число рабочих дней в году" Type="number" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="downtimePercentage" Label="Процент простоев на ремонт" Type="number" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="productivityPerMachine" Label="Производительность 1 станка (деталей в час)" Type="number" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="plannedProduction" Label="План выпуска продукции за год" Type="number" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudButton OnClick="Calculate" Color="Color.Primary">Рассчитать</MudButton>
-            <MudButton OnClick="ClearValues" Color="Color.Secondary">Очистить</MudButton>
-            <MudButton OnClick="SetDefaultValues" Color="Color.Info">Установить значения из задачи</MudButton>
-        </MudItem>
-
-        <MudItem xs="12">
-            @if (result != null)
-            {
-                <MudText>Производственная мощность: @result.ProductionCapacity деталей</MudText>
-
-                <MudText>Коэффициент использования мощности: @result.UtilizationCoefficient</MudText>
-            }
-        </MudItem>
-        <MudItem xs="12">
-            <MudText variant="h6">Шаги расчета:</MudText>
-            @foreach (string step in calculationSteps)
-            {
-                <MudText>@step</MudText>
-            }
-        </MudItem>
-
-    </MudGrid>
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
 </MudContainer>
-
-@code {
-    [Parameter]
-    public bool? loadDefaults { get; set; } = false;
-
-    private double initialMachines;
-    private readonly List<MachineEntry> newMachineDates = new();
-    private DateTime? newMachineDate;
-    private double newMachineCount;
-
-    private readonly List<MachineEntry> removedMachineDates = new();
-    private DateTime? removedMachineDate;
-    private double removedMachineCount;
-
-    private double workingDays = 258;
-    private double downtimePercentage;
-    private double productivityPerMachine;
-    private double plannedProduction;
-
-    private CalculationResult result;
-
-    protected override void OnParametersSet()
-    {
-        if (loadDefaults == true)
-        {
-            SetDefaultValues();
-            Calculate();
-        }
-    }
-
-    private void AddNewMachineDate()
-    {
-        if (newMachineDate != default && newMachineCount > 0)
-        {
-            newMachineDates.Add(new MachineEntry { Date = newMachineDate.Value, Count = newMachineCount });
-            newMachineDate = default;
-            newMachineCount = 0;
-        }
-    }
-
-    private void AddRemovedMachineDate()
-    {
-        if (removedMachineDate != default && removedMachineCount > 0)
-        {
-            removedMachineDates.Add(new MachineEntry { Date = removedMachineDate.Value, Count = removedMachineCount });
-            removedMachineDate = default;
-            removedMachineCount = 0;
-        }
-    }
-
-    private void ClearValues()
-    {
-        initialMachines = 0;
-        newMachineDates.Clear();
-        removedMachineDates.Clear();
-        newMachineDate = default;
-        newMachineCount = 0;
-        removedMachineDate = default;
-        removedMachineCount = 0;
-        workingDays = 258;
-        downtimePercentage = 0;
-        productivityPerMachine = 6;
-        plannedProduction = 1700000;
-        calculationSteps.Clear();
-        result = null;
-    }
-
-    private void SetDefaultValues()
-    {
-        initialMachines = 120;
-        newMachineDates.Clear();
-        newMachineDates.Add(new MachineEntry { Date = new DateTime(DateTime.Now.Year, 11, 1), Count = 23 });
-        removedMachineDates.Clear();
-        removedMachineDates.Add(new MachineEntry { Date = new DateTime(DateTime.Now.Year, 5, 1), Count = 7 });
-        workingDays = 258;
-        downtimePercentage = 4;
-        productivityPerMachine = 6;
-        plannedProduction = 1700000;
-        calculationSteps.Clear();
-        result = null;
-    }
-
-    private readonly List<string> calculationSteps = new();
-
-    private void Calculate()
-    {
-        calculationSteps.Clear();
-
-        double averageMachines = initialMachines;
-
-        foreach (MachineEntry entry in newMachineDates)
-        {
-            int monthsActive = 12 - entry.Date.Month + 1;
-            averageMachines += entry.Count * (monthsActive / 12.0);
-        }
-
-        foreach (MachineEntry entry in removedMachineDates)
-        {
-            int monthsActive = 12 - entry.Date.Month;
-            averageMachines -= entry.Count * (monthsActive / 12.0);
-        }
-
-        double totalHours = workingDays * 2 * 8;
-
-        double downtimeHours = totalHours * (downtimePercentage / 100);
-        double availableHours = totalHours - downtimeHours;
-
-        double productionCapacity = averageMachines * productivityPerMachine * availableHours;
-
-        double utilizationCoefficient = plannedProduction / productionCapacity;
-
-        result = new CalculationResult
-        {
-            ProductionCapacity = productionCapacity,
-            UtilizationCoefficient = utilizationCoefficient,
-        };
-
-        calculationSteps.Add("Расчет производственной мощности:");
-        calculationSteps.Add("1. Среднегодовое количество станков (A):");
-        calculationSteps.Add($"   A = {initialMachines} + Σ(введенные станки * (количество месяцев / 12)) - Σ(выбывшие станки * (количество месяцев / 12))");
-
-        foreach (MachineEntry entry in newMachineDates)
-        {
-            int monthsActive = 12 - entry.Date.Month + 1;
-            calculationSteps.Add($"   + {entry.Count} * ({monthsActive} / 12) = {entry.Count * (monthsActive / 12.0)}");
-        }
-
-        foreach (MachineEntry entry in removedMachineDates)
-        {
-            int monthsActive = 12 - entry.Date.Month;
-            calculationSteps.Add($"   - {entry.Count} * ({monthsActive} / 12) = {entry.Count * (monthsActive / 12.0)}");
-        }
-
-        calculationSteps.Add($"   A = {averageMachines}");
-
-        calculationSteps.Add("2. Общее время работы (T):");
-        calculationSteps.Add($"   T = {workingDays} * 2 * 8 = {totalHours} часов");
-
-        calculationSteps.Add("3. Время простоя (D):");
-        calculationSteps.Add($"   D = T * ({downtimePercentage} / 100) = {downtimeHours} часов");
-
-        calculationSteps.Add("4. Доступное время (A):");
-        calculationSteps.Add($"   A = T - D = {availableHours} часов");
-
-        calculationSteps.Add("5. Производственная мощность (P):");
-        calculationSteps.Add("   P = A * производительность * среднегодовое количество станков");
-        calculationSteps.Add($"   P = {availableHours} * {productivityPerMachine} * {averageMachines} = {productionCapacity} деталей");
-
-        calculationSteps.Add("6. Коэффициент использования мощности (U):");
-        calculationSteps.Add($"   U = план выпуска / P = {plannedProduction} / {productionCapacity} = {utilizationCoefficient}");
-    }
-
-    private class MachineEntry
-    {
-        public DateTime Date { get; set; }
-        public double Count { get; set; }
-    }
-
-    private class CalculationResult
-    {
-        public double ProductionCapacity { get; set; }
-        public double UtilizationCoefficient { get; set; }
-    }
-
-}
