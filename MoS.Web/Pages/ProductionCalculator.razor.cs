@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MudBlazor;
+using Microsoft.JSInterop;
 
 namespace MoS.Web.Pages;
 
@@ -28,11 +28,12 @@ public partial class ProductionCalculator
     private double _shiftDuration = 8;
 
     private CalculationResult? _result;
-    private int _panelIndex;
-    private MudTabs tabs;
 
     [Parameter]
     public bool? LoadDefaults { get; set; } = false;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
 
     protected override void OnParametersSet()
     {
@@ -43,11 +44,13 @@ public partial class ProductionCalculator
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && LoadDefaults == true)
         {
-            tabs.ActivatePanel(2);
+           await Task.Delay(100)
+               .ContinueWith(_ => JsRuntime.InvokeVoidAsync("scrollToElement", "result"))
+               .ConfigureAwait(false);
         }
     }
 

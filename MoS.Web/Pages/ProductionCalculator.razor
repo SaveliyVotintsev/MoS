@@ -1,101 +1,103 @@
 ﻿@page "/production-calculator/{loadDefaults:bool?}"
-<MudContainer>
-    <MudPaper Elevation="3" Class="pa-6">
-        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom>Калькулятор производственной мощности</MudText>
+<MudText Typo="Typo.h5" Align="Align.Center" GutterBottom>Калькулятор производственной мощности</MudText>
 
-        <MudTabs Class="m-6" Elevation="0" @ref="tabs" SliderAnimation Centered>
-            <MudTabPanel Text="Основные данные">
-                <MudGrid>
-                    <MudItem xs="12" sm="6">
-                        <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_newMachineDate" Label="Дата введения новых станков" />
-                        <MudNumericField @bind-Value="_newMachineCount" Label="Количество введенных станков" />
-                        <MudButton OnClick="AddNewMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
-                    </MudItem>
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom>Основные данные</MudText>
 
-                    <MudItem xs="12" sm="6">
-                        <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_removedMachineDate" Label="Дата выбытия станков" />
-                        <MudNumericField @bind-Value="_removedMachineCount" Label="Количество выбывших станков" />
-                        <MudButton OnClick="AddRemovedMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
-                    </MudItem>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_newMachineDate" Label="Дата введения новых станков" />
+            <MudNumericField @bind-Value="_newMachineCount" Label="Количество введенных станков" />
+            <MudButton OnClick="AddNewMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
+        </MudItem>
 
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_initialMachines" Label="Количество станков на начало года" />
-                    </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker AutoClose OpenTo="OpenTo.Month" FixDay="1" @bind-Date="_removedMachineDate" Label="Дата выбытия станков" />
+            <MudNumericField @bind-Value="_removedMachineCount" Label="Количество выбывших станков" />
+            <MudButton OnClick="AddRemovedMachineDate" Color="Color.Primary" Class="mt-4">Добавить дату</MudButton>
+        </MudItem>
 
-                    <MudItem xs="12">
-                        <MudList T="string">
-                            @foreach (MachineEntry entry in _newMachineDates)
-                            {
-                                <MudListItem>
-                                    @entry.Date.ToShortDateString() + @entry.Count станков
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveNewMachineDate(entry)" />
-                                </MudListItem>
-                            }
-                        </MudList>
-                        <MudList T="string">
-                            @foreach (MachineEntry entry in _removedMachineDates)
-                            {
-                                <MudListItem>
-                                    @entry.Date.ToShortDateString() - @entry.Count станков
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveRemovedMachineDate(entry)" />
-                                </MudListItem>
-                            }
-                        </MudList>
-                    </MudItem>
-                </MudGrid>
-            </MudTabPanel>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_initialMachines" Label="Количество станков на начало года" />
+        </MudItem>
 
-            <MudTabPanel Text="Параметры">
-                <MudGrid>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_workingDays" Label="Число рабочих дней в году" Format="N2" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_downtimePercentage" Label="Процент простоев на ремонт" Format="N2" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_productivityPerMachine" Label="Производительность 1 станка (деталей в час)" Format="N2" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_plannedProduction" Label="План выпуска продукции за год" Format="N2" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_shiftsCount" Label="Количество смен" Format="N2" />
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_shiftDuration" Label="Продолжительность смены (часов)" Format="N2" />
-                    </MudItem>
-                </MudGrid>
-            </MudTabPanel>
-            <MudTabPanel Text="Результаты">
-                <MudStack Row>
-                    <MudButton OnClick="Calculate" Color="Color.Primary" FullWidth>Рассчитать</MudButton>
-                    <MudButton OnClick="ClearValues" Color="Color.Secondary" FullWidth>Очистить</MudButton>
-                    <MudButton OnClick="SetDefaultValues" Color="Color.Info" FullWidth>Установить значения из задачи</MudButton>
-                </MudStack>
-                @if (_result != null)
+        <MudItem xs="12">
+            <MudList T="string">
+                @foreach (MachineEntry entry in _newMachineDates)
                 {
-                    <MudText Typo="Typo.h6">Производственная мощность: @_result.ProductionCapacity.ToString("N2") деталей</MudText>
-
-                    <MudText Typo="Typo.h6">Коэффициент использования мощности: @_result.UtilizationCoefficient.ToString($"F{Precision}")</MudText>
-
-                    <MudText Typo="Typo.h6" Class="mt-6">Шаги расчета:</MudText>
-
-                    <MudPaper Elevation="0" Class="pa-4">
-                        @foreach (string step in _calculationSteps)
-                        {
-                            if (char.IsDigit(step[0]))
-                            {
-                                <MudText Typo="Typo.h6" GutterBottom>@step</MudText>
-                            }
-                            else
-                            {
-                                <MudText>@step</MudText>
-                            }
-                        }
-                    </MudPaper>
+                    <MudListItem>
+                        @entry.Date.ToShortDateString() + @entry.Count станков
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveNewMachineDate(entry)" />
+                    </MudListItem>
                 }
-            </MudTabPanel>
-        </MudTabs>
+            </MudList>
+            <MudList T="string">
+                @foreach (MachineEntry entry in _removedMachineDates)
+                {
+                    <MudListItem>
+                        @entry.Date.ToShortDateString() - @entry.Count станков
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemoveRemovedMachineDate(entry)" />
+                    </MudListItem>
+                }
+            </MudList>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom>Параметры</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_workingDays" Label="Число рабочих дней в году" Format="N2" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_downtimePercentage" Label="Процент простоев на ремонт" Format="N2" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_productivityPerMachine" Label="Производительность 1 станка" HelperText="(деталей в час)" Format="N2" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_plannedProduction" Label="План выпуска продукции за год" Format="N2" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_shiftsCount" Label="Количество смен" Format="N" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField @bind-Value="_shiftDuration" Label="Продолжительность смены" HelperText="(часов)" Format="N" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+<div id="result">
+
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom>Результаты</MudText>
+        <MudStack Row>
+            <MudButton OnClick="Calculate" Color="Color.Primary" FullWidth>Рассчитать</MudButton>
+            <MudButton OnClick="ClearValues" Color="Color.Secondary" FullWidth>Очистить</MudButton>
+            <MudButton OnClick="SetDefaultValues" Color="Color.Info" FullWidth>Установить значения из задачи</MudButton>
+        </MudStack>
+
+        @if (_result != null)
+        {
+            <MudText Typo="Typo.h6">Производственная мощность: @_result.ProductionCapacity.ToString("N2") деталей</MudText>
+
+            <MudText Typo="Typo.h6">Коэффициент использования мощности: @_result.UtilizationCoefficient.ToString($"F{Precision}")</MudText>
+
+            <MudText Typo="Typo.h6" Class="mt-6">Шаги расчета:</MudText>
+
+            <MudPaper Elevation="0" Class="pa-4">
+                @foreach (string step in _calculationSteps)
+                {
+                    if (char.IsDigit(step[0]))
+                    {
+                        <MudText Typo="Typo.h6" GutterBottom>@step</MudText>
+                    }
+                    else
+                    {
+                        <MudText>@step</MudText>
+                    }
+                }
+            </MudPaper>
+        }
     </MudPaper>
-</MudContainer>
+</div>
