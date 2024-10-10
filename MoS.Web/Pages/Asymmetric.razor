@@ -107,17 +107,17 @@
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="InputText" Label="Текст для шифрования/дешифрования" Variant="Variant.Filled" />
+                <MudTextField FullWidth @bind-Value="InputText" Label="Число для шифрования/дешифрования" Variant="Variant.Filled" />
             </MudItem>
             <MudItem xs="12">
                 <MudButton OnClick="Encrypt" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Зашифровать</MudButton>
                 <MudButton OnClick="Decrypt" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4">Расшифровать</MudButton>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="EncryptedText" Label="Зашифрованный текст" Variant="Variant.Filled" ReadOnly />
+                <MudTextField FullWidth @bind-Value="EncryptedText" Label="Зашифрованные число" Variant="Variant.Filled" ReadOnly />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="DecryptedText" Label="Расшифрованный текст" Variant="Variant.Filled" ReadOnly />
+                <MudTextField FullWidth @bind-Value="DecryptedText" Label="Расшифрованное число" Variant="Variant.Filled" ReadOnly />
             </MudItem>
         </MudGrid>
     </MudTabPanel>
@@ -129,14 +129,9 @@
     public string PublicKeyExponent { get; set; } = "9";
     public string PrivateKeyModulus { get; set; } = "667";
     public string PrivateKeyExponent { get; set; } = "137";
-    private string InputText { get; set; }
-    private string EncryptedText { get; set; }
-    private string DecryptedText { get; set; }
-
-    [Inject]
-    private HttpClient Client { get; set; } = default!;
-
-    private readonly Dictionary<int, char> _altCodes = new();
+    private string InputText { get; set; } = string.Empty;
+    private string EncryptedText { get; set; } = string.Empty;
+    private string DecryptedText { get; set; } = string.Empty;
 
     public void Decrypt()
     {
@@ -149,8 +144,6 @@
             }
 
             BigInteger.TryParse(InputText, out BigInteger plaintextInt);
-            //byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(array);
-            //BigInteger plaintextInt = new(bytesToEncrypt);
             BigInteger encrypted = BigInteger.ModPow(plaintextInt, exponent, modulus);
             DecryptedText = encrypted.ToString();
         }
@@ -170,58 +163,13 @@
                 return;
             }
 
-            int[] array = InputText.Select(x => _altCodes.First(y => y.Value == 'я').Key).ToArray();
-            BigInteger.TryParse(string.Join("", array), out BigInteger plaintextInt);
-            //byte[] bytesToEncrypt = Encoding.UTF8.GetBytes(array);
-            //BigInteger plaintextInt = new(bytesToEncrypt);
+            BigInteger.TryParse(InputText, out BigInteger plaintextInt);
             BigInteger encrypted = BigInteger.ModPow(plaintextInt, exponent, modulus);
             EncryptedText = encrypted.ToString();
         }
         catch (Exception ex)
         {
             _errorMessage = $"Error in encryption: {ex.Message}";
-        }
-    }
-
-    /*public void Decrypt()
-    {
-        try
-        {
-            if (!BigInteger.TryParse(PrivateKeyModulus, out BigInteger modulus) || !BigInteger.TryParse(PrivateKeyExponent, out BigInteger exponent))
-            {
-                _errorMessage = "Invalid private key.";
-                return;
-            }
-
-            BigInteger encrypted = BigInteger.Parse(Ciphertext);
-            BigInteger decrypted = BigInteger.ModPow(encrypted, exponent, modulus);
-            byte[] decryptedBytes = decrypted.ToByteArray();
-            DecryptedResult = Encoding.UTF8.GetString(decryptedBytes);
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = $"Error in decryption: {ex.Message}";
-        }
-    }*/
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadAltCodesAsync();
-    }
-
-    private async Task LoadAltCodesAsync()
-    {
-        string fileContent = await Client.GetStringAsync("data/alt-codes.txt");
-        string[] lines = fileContent.Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (string line in lines)
-        {
-            string[] parts = line.Split(' ');
-
-            if (parts.Length == 2 && int.TryParse(parts[0], out int code))
-            {
-                _altCodes[code] = parts[1][0];
-            }
         }
     }
 }
