@@ -48,10 +48,10 @@
     <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom>Параметры</MudText>
     <MudGrid>
         <MudItem xs="12" sm="6">
-            <MudNumericField @bind-Value="_workingDays" Label="Число рабочих дней в году" Format="N2" />
+            <MudNumericField @bind-Value="_workingDays" Label="Число рабочих дней в году" Format="N0" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudNumericField @bind-Value="_downtimePercentage" Label="Процент простоев на ремонт" Format="N2" />
+            <MudNumericField @bind-Value="_downtimePercentage" Label="Процент простоев на ремонт" Format="N0" />
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudNumericField @bind-Value="_productivityPerMachine" Label="Производительность 1 станка" HelperText="(деталей в час)" Format="N2" />
@@ -60,10 +60,10 @@
             <MudNumericField @bind-Value="_plannedProduction" Label="План выпуска продукции за год" Format="N2" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudNumericField @bind-Value="_shiftsCount" Label="Количество смен" Format="N" />
+            <MudNumericField @bind-Value="_shiftsCount" Label="Количество смен" Format="N0" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudNumericField @bind-Value="_shiftDuration" Label="Продолжительность смены" HelperText="(часов)" Format="N" />
+            <MudNumericField @bind-Value="_shiftDuration" Label="Продолжительность смены" HelperText="(часов)" Format="N0" />
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -85,19 +85,23 @@
 
             <MudText Typo="Typo.h6" Class="mt-6">Шаги расчета:</MudText>
 
-            <MudPaper Elevation="0" Class="pa-4">
-                @foreach (string step in _calculationSteps)
+            <MudDivider Class="my-2" DividerType="DividerType.FullWidth" Style="height: 4px;" />
+
+            foreach (string step in _calculationSteps)
+            {
+                if (char.IsDigit(step[0]))
                 {
-                    if (char.IsDigit(step[0]))
-                    {
-                        <MudText Typo="Typo.h6" GutterBottom>@step</MudText>
-                    }
-                    else
-                    {
-                        <MudText>@step</MudText>
-                    }
+                    <MudText Typo="Typo.h6" GutterBottom>@step</MudText>
+
+                    <MudDivider Class="my-2" DividerType="DividerType.FullWidth" Style="height: 4px;" />
                 }
-            </MudPaper>
+                else
+                {
+                    <MudText>@step</MudText>
+
+                    <MudDivider Class="my-2" DividerType="DividerType.FullWidth" Light Style="height: 2px;" />
+                }
+            }
         }
     </MudPaper>
 </div>
