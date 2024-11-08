@@ -48,9 +48,9 @@ public partial class ProductionCalculator
     {
         if (firstRender && LoadDefaults == true)
         {
-           await Task.Delay(100)
-               .ContinueWith(_ => JsRuntime.InvokeVoidAsync("scrollToElement", "result"))
-               .ConfigureAwait(false);
+            await Task.Delay(100)
+                .ContinueWith(_ => JsRuntime.InvokeVoidAsync("scrollToElement", "result"))
+                .ConfigureAwait(false);
         }
     }
 

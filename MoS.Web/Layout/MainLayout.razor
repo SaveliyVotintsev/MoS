@@ -1,16 +1,24 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider IsDarkMode="_isDarkMode"
+                  Theme="@_theme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())" />
+        <MudIconButton Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       Icon="@Icons.Material.Filled.Menu"
+                       OnClick="@DrawerToggle" />
         <MudSpacer />
-        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+        <MudIconButton Color="Color.Inherit"
+                       Icon="@(DarkLightModeButtonIcon)"
+                       OnClick="@DarkModeToggle" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="2">
         <NavMenu />
     </MudDrawer>
     <MudMainContent Class="mt-16 pa-4">

@@ -3,7 +3,8 @@
 
 @if (CalculateData == null || CalculateResult == null)
 {
-    <MudStack AlignItems="AlignItems.Center" Row>
+    <MudStack AlignItems="AlignItems.Center"
+              Row>
         <MudProgressCircular Indeterminate />
         <MudText Typo="Typo.body1">Нет результатов...</MudText>
     </MudStack>
@@ -14,9 +15,18 @@ else
         <div id="result">
             <MudCard Elevation="5">
                 <MudCardHeader>
-                    <MudStack Row AlignItems="AlignItems.Center" Spacing="3" Justify="Justify.SpaceAround">
-                        <MudIcon Color="Color.Success" Size="Size.Large" Icon="@Icons.Material.Filled.Report"></MudIcon>
-                        <MudText Color="Color.Success" Typo="Typo.h5">Результат</MudText>
+                    <MudStack AlignItems="AlignItems.Center"
+                              Justify="Justify.SpaceAround"
+                              Row
+                              Spacing="3">
+                        <MudIcon Color="Color.Success"
+                                 Icon="@Icons.Material.Filled.Report"
+                                 Size="Size.Large">
+                        </MudIcon>
+                        <MudText Color="Color.Success"
+                                 Typo="Typo.h5">
+                            Результат
+                        </MudText>
                     </MudStack>
                 </MudCardHeader>
                 <MudCardContent>
@@ -45,7 +55,8 @@ else
                 <MudListItem>A<sub>3</sub>: @CalculateData.a3.ToString($"F{Decimals}")</MudListItem>
             </MudList>
 
-            <MudExpansionPanels @ref="_panels" MultiExpansion>
+            <MudExpansionPanels MultiExpansion
+                                @ref="_panels">
                 <MudExpansionPanel Text="Корни">
                     <MudList T="Complex">
                         @foreach (Complex root in CalculateResult.Roots)

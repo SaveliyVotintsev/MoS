@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
+using System.Numerics;
 
 namespace MoS.Web.Services;
 
@@ -14,7 +14,7 @@ public static class ComplexFormatter
         {
             > 0 => $"{realPart} + {imagPart}i",
             0 => $"{realPart}",
-            var _ => $"{realPart} - {Math.Abs(complex.Imaginary).ToString($"F{decimals}")}i"
+            var _ => $"{realPart} - {Math.Abs(complex.Imaginary).ToString($"F{decimals}")}i",
         };
     }
 

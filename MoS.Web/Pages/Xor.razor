@@ -5,27 +5,44 @@
         <MudText Typo="Typo.h5">Симметричное шифрование</MudText>
 
         <MudStack Spacing="3">
-            <MudTabs MinimumTabWidth="20px" @bind-ActivePanelIndex="ActiveTabIndex">
+            <MudTabs @bind-ActivePanelIndex="ActiveTabIndex"
+                     MinimumTabWidth="20px">
                 <MudTabPanel Text="Символ">
-                    <MudTextField @bind-Value="InputSymbol" Label="Введите символ" MaxLength="1" />
+                    <MudTextField @bind-Value="InputSymbol"
+                                  Label="Введите символ"
+                                  MaxLength="1" />
                 </MudTabPanel>
                 <MudTabPanel Text="ALT-код">
-                    <MudNumericField @bind-Value="InputAltCode" Label="Введите ALT-код" />
+                    <MudNumericField @bind-Value="InputAltCode"
+                                     Label="Введите ALT-код" />
                 </MudTabPanel>
                 <MudTabPanel Text="Слово">
-                    <MudTextField @bind-Value="InputWord" Label="Введите слово" />
+                    <MudTextField @bind-Value="InputWord"
+                                  Label="Введите слово" />
                 </MudTabPanel>
             </MudTabs>
-            <MudNumericField @bind-Value="NumberOfRounds" Label="Количество раундов" Min="1" />
-            <MudTextField @bind-Value="KeyShifts" Label="Смещения ключа (через пробел)" />
-            <MudText Typo="Typo.body2" Color="Color.Info">
+            <MudNumericField @bind-Value="NumberOfRounds"
+                             Label="Количество раундов"
+                             Min="1" />
+            <MudTextField @bind-Value="KeyShifts"
+                          Label="Смещения ключа (через пробел)" />
+            <MudText Color="Color.Info"
+                     Typo="Typo.body2">
                 Введите положительные значения для сдвига вправо и отрицательные для сдвига влево.
             </MudText>
-            <MudSwitch Color="Color.Success" UncheckedColor="Color.Error" @bind-Value="IsEncryptMode" Label="@(IsEncryptMode ? "Шифрование" : "Дешифрование")" />
-            <MudButton OnClick="Process" Variant="Variant.Filled" Color="Color.Primary">Выполнить</MudButton>
+            <MudSwitch @bind-Value="IsEncryptMode"
+                       Color="Color.Success"
+                       Label="@(IsEncryptMode ? "Шифрование" : "Дешифрование")"
+                       UncheckedColor="Color.Error" />
+            <MudButton Color="Color.Primary"
+                       OnClick="Process"
+                       Variant="Variant.Filled">
+                Выполнить
+            </MudButton>
         </MudStack>
 
-        <MudTable Items="_table" Breakpoint="Breakpoint.None">
+        <MudTable Breakpoint="Breakpoint.None"
+                  Items="_table">
             <HeaderContent>
                 <MudTh>Символ</MudTh>
                 <MudTh>ALT-код</MudTh>
@@ -44,7 +61,8 @@
             </RowTemplate>
         </MudTable>
 
-        <MudTabs MinimumTabWidth="20px" @bind-ActivePanelIndex="ResultTabIndex">
+        <MudTabs @bind-ActivePanelIndex="ResultTabIndex"
+                 MinimumTabWidth="20px">
             @foreach (KeyValuePair<string, string> result in Results)
             {
                 <MudTabPanel Text="@result.Key">

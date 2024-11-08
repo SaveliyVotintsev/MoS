@@ -14,7 +14,7 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped(_ => new HttpClient
 {
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
 });
 
 builder.Services.AddScoped<IVariantService, VariantService>();

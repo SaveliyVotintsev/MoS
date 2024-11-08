@@ -1,6 +1,7 @@
 ﻿@if (Variants is { Count: > 0 })
 {
-    <MudSelect @bind-Value="SelectedVariant" Label="Выберите вариант">
+    <MudSelect @bind-Value="SelectedVariant"
+               Label="Выберите вариант">
         <MudSelectItem Value="@DefaultVariant">Ручной</MudSelectItem>
         @foreach (int key in Variants.Keys)
         {

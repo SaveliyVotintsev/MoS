@@ -32,7 +32,7 @@ jobs:
         run: dotnet publish ./MoS.Web/MoS.Web.csproj -c:Release -p:GHPages=true -o dist/Web --nologo
 
       - name: Commit wwwroot to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4.6.5
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: 'dist/Web/wwwroot'
           branch: 'gh-pages'

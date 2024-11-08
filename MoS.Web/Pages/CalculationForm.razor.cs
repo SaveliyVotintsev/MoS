@@ -1,10 +1,10 @@
-﻿using System.Numerics;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MoS.Web.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
+using System.Numerics;
 
 namespace MoS.Web.Pages;
 

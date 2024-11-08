@@ -15,7 +15,7 @@ public partial class MainLayout
         AppbarBackground = "rgba(255,255,255,0.8)",
         DrawerBackground = "#ffffff",
         GrayLight = "#e8e8e8",
-        GrayLighter = "#f9f9f9"
+        GrayLighter = "#f9f9f9",
     };
 
     private readonly PaletteDark _darkPalette = new()
@@ -44,7 +44,7 @@ public partial class MainLayout
         LinesDefault = "#33323e",
         TableLines = "#33323e",
         Divider = "#292838",
-        OverlayLight = "#1e1e2d80"
+        OverlayLight = "#1e1e2d80",
     };
 
     private bool _drawerOpen = true;
@@ -54,7 +54,7 @@ public partial class MainLayout
     public string DarkLightModeButtonIcon => _isDarkMode switch
     {
         true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode
+        false => Icons.Material.Outlined.DarkMode,
     };
 
     [Inject]
@@ -71,7 +71,7 @@ public partial class MainLayout
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
-            LayoutProperties = new LayoutProperties()
+            LayoutProperties = new LayoutProperties(),
         };
     }
 

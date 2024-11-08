@@ -3,10 +3,16 @@
 
 <MudCard Elevation="5">
     <MudCardContent>
-        <canvas id="myChart" style="width:100%"></canvas>
+        <canvas id="myChart"
+                style="width:100%">
+        </canvas>
 
-        <MudStack Row AlignItems="AlignItems.Center" StretchItems="StretchItems.Start">
-            <MudStack Row AlignItems="AlignItems.Center" StretchItems="StretchItems.All">
+        <MudStack AlignItems="AlignItems.Center"
+                  Row
+                  StretchItems="StretchItems.Start">
+            <MudStack AlignItems="AlignItems.Center"
+                      Row
+                      StretchItems="StretchItems.All">
                 <MudStack>
                     <MudNumericField @bind-Value="Step"
                                      Culture="CultureInfo.InvariantCulture"
@@ -20,7 +26,11 @@
                                      Step=".01D"
                                      Variant="Variant.Outlined" />
 
-                    <MudSlider @bind-Value="Step" Max="1" Min="0.01" Step="0.01" ValueLabel />
+                    <MudSlider @bind-Value="Step"
+                               Max="1"
+                               Min="0.01"
+                               Step="0.01"
+                               ValueLabel />
                 </MudStack>
 
                 <MudStack>
@@ -35,10 +45,16 @@
                                      Step="1"
                                      Variant="Variant.Outlined" />
 
-                    <MudSlider @bind-Value="MaxT" Max="100" Min="1" Step="1" ValueLabel />
+                    <MudSlider @bind-Value="MaxT"
+                               Max="100"
+                               Min="1"
+                               Step="1"
+                               ValueLabel />
                 </MudStack>
             </MudStack>
-            <MudIconButton Icon="@Icons.Material.TwoTone.Restore" OnClick="Restore"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.TwoTone.Restore"
+                           OnClick="Restore">
+            </MudIconButton>
         </MudStack>
     </MudCardContent>
 </MudCard>

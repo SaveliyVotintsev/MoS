@@ -17,7 +17,7 @@ public partial class VariantsTable
         return new TableData<KeyValuePair<int, VariantData>>
         {
             Items = data,
-            TotalItems = data.Count
+            TotalItems = data.Count,
         };
     }
 }

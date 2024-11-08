@@ -7,7 +7,11 @@
     </MudStack>
 
     <MudStack Row>
-        <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface" OnClick="Submit" Variant="Variant.Filled">Рассчитать</MudButton>
+        <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface"
+                   OnClick="Submit"
+                   Variant="Variant.Filled">
+            Рассчитать
+        </MudButton>
         <VariantSelector OnVariantSelected="SetVariantValues" />
     </MudStack>
 
@@ -19,7 +23,8 @@
     @if (_resultsAvailable)
     {
         <CascadingValue Value="Decimals">
-            <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
+            <ResultsDisplay CalculateData="_calculateData"
+                            CalculateResult="_calculateResult" />
         </CascadingValue>
     }
 </MudStack>

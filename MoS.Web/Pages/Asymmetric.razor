@@ -5,32 +5,76 @@
 <MudTabs>
     <MudTabPanel Text="Ключи">
         <MudGrid>
-            <MudItem xs="12" sm="6">
-                <MudTextField FullWidth @bind-Value="PrimeP" Label="Простое число P" Variant="Variant.Filled" />
+            <MudItem sm="6"
+                     xs="12">
+                <MudTextField @bind-Value="PrimeP"
+                              FullWidth
+                              Label="Простое число P"
+                              Variant="Variant.Filled" />
             </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudTextField FullWidth @bind-Value="PrimeQ" Label="Простое число Q" Variant="Variant.Filled" />
+            <MudItem sm="6"
+                     xs="12">
+                <MudTextField @bind-Value="PrimeQ"
+                              FullWidth
+                              Label="Простое число Q"
+                              Variant="Variant.Filled" />
             </MudItem>
 
-            <MudItem xs="12" sm="6">
+            <MudItem sm="6"
+                     xs="12">
                 <MudStack>
-                    <MudSlider @bind-Value="KMin" Min="1" Max="100" Color="Color.Error">Минимальное k: @KMin.ToString()</MudSlider>
-                    <MudSlider @bind-Value="KMax" Min="1" Max="100" Color="Color.Info">Максимальное k: @KMax.ToString()</MudSlider>
+                    <MudSlider @bind-Value="KMin"
+                               Color="Color.Error"
+                               Max="100"
+                               Min="1">
+                        Минимальное k: @KMin.ToString()
+                    </MudSlider>
+                    <MudSlider @bind-Value="KMax"
+                               Color="Color.Info"
+                               Max="100"
+                               Min="1">
+                        Максимальное k: @KMax.ToString()
+                    </MudSlider>
                 </MudStack>
             </MudItem>
-            <MudItem xs="12" sm="6">
+            <MudItem sm="6"
+                     xs="12">
                 <MudStack>
-                    <MudSlider @bind-Value="EMin" Min="3" Max="99" Step="2" Color="Color.Error">Минимальное e: @EMin.ToString()</MudSlider>
-                    <MudSlider @bind-Value="EMax" Min="3" Max="99" Step="2" Color="Color.Info">Максимальное e: @EMax.ToString()</MudSlider>
+                    <MudSlider @bind-Value="EMin"
+                               Color="Color.Error"
+                               Max="99"
+                               Min="3"
+                               Step="2">
+                        Минимальное e: @EMin.ToString()
+                    </MudSlider>
+                    <MudSlider @bind-Value="EMax"
+                               Color="Color.Info"
+                               Max="99"
+                               Min="3"
+                               Step="2">
+                        Максимальное e: @EMax.ToString()
+                    </MudSlider>
                 </MudStack>
             </MudItem>
         </MudGrid>
 
-        <MudButton OnClick="CalculateKeys" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Нажми</MudButton>
+        <MudButton Class="mt-4"
+                   Color="Color.Primary"
+                   OnClick="CalculateKeys"
+                   Variant="Variant.Filled">
+            Нажми
+        </MudButton>
 
-        <MudProgressLinear Value="@_progress" Buffer="true" Color="Color.Success" Class="my-2" />
+        <MudProgressLinear Buffer="true"
+                           Class="my-2"
+                           Color="Color.Success"
+                           Value="@_progress" />
 
-        <MudTable Items="_results" Striped Breakpoint="Breakpoint.None" FixedHeader SortLabel="Sort By">
+        <MudTable Breakpoint="Breakpoint.None"
+                  FixedHeader
+                  Items="_results"
+                  SortLabel="Sort By"
+                  Striped>
             <HeaderContent>
                 <MudTh>
                     <MudTableSortLabel SortBy="new Func<KeyResult, object>(x => x.Modulus)">Modulus (n)</MudTableSortLabel>
@@ -97,27 +141,60 @@
     <MudTabPanel Text="Шифрование/Дешифрование">
         <MudGrid>
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="PublicKeyModulus" Label="Modulus (Public Key)" Variant="Variant.Filled" />
-                <MudTextField FullWidth @bind-Value="PublicKeyExponent" Label="Exponent (Public Key)" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="PublicKeyModulus"
+                              FullWidth
+                              Label="Modulus (Public Key)"
+                              Variant="Variant.Filled" />
+                <MudTextField @bind-Value="PublicKeyExponent"
+                              FullWidth
+                              Label="Exponent (Public Key)"
+                              Variant="Variant.Filled" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="PrivateKeyModulus" Label="Modulus (Private Key)" Variant="Variant.Filled" />
-                <MudTextField FullWidth @bind-Value="PrivateKeyExponent" Label="Exponent (Private Key)" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="PrivateKeyModulus"
+                              FullWidth
+                              Label="Modulus (Private Key)"
+                              Variant="Variant.Filled" />
+                <MudTextField @bind-Value="PrivateKeyExponent"
+                              FullWidth
+                              Label="Exponent (Private Key)"
+                              Variant="Variant.Filled" />
             </MudItem>
 
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="InputText" Label="Число для шифрования/дешифрования" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="InputText"
+                              FullWidth
+                              Label="Число для шифрования/дешифрования"
+                              Variant="Variant.Filled" />
             </MudItem>
             <MudItem xs="12">
-                <MudButton OnClick="Encrypt" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Зашифровать</MudButton>
-                <MudButton OnClick="Decrypt" Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4">Расшифровать</MudButton>
+                <MudButton Class="mt-4"
+                           Color="Color.Primary"
+                           OnClick="Encrypt"
+                           Variant="Variant.Filled">
+                    Зашифровать
+                </MudButton>
+                <MudButton Class="mt-4"
+                           Color="Color.Secondary"
+                           OnClick="Decrypt"
+                           Variant="Variant.Filled">
+                    Расшифровать
+                </MudButton>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="EncryptedText" Label="Зашифрованные число" Variant="Variant.Filled" ReadOnly />
+                <MudTextField @bind-Value="EncryptedText"
+                              FullWidth
+                              Label="Зашифрованные число"
+                              ReadOnly
+                              Variant="Variant.Filled" />
             </MudItem>
             <MudItem xs="12">
-                <MudTextField FullWidth @bind-Value="DecryptedText" Label="Расшифрованное число" Variant="Variant.Filled" ReadOnly />
+                <MudTextField @bind-Value="DecryptedText"
+                              FullWidth
+                              Label="Расшифрованное число"
+                              ReadOnly
+                              Variant="Variant.Filled" />
             </MudItem>
         </MudGrid>
     </MudTabPanel>
