@@ -1,27 +1,25 @@
 ﻿@page "/"
 
-<MudContainer>
-    <MudStack Spacing="3">
-        <MudStack>
-            <h3>Форма расчета</h3>
-            <InputForm @ref="_inputForm" />
-        </MudStack>
-
-        <MudStack Row>
-            <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface" OnClick="Submit" Variant="Variant.Filled">Рассчитать</MudButton>
-            <VariantSelector OnVariantSelected="SetVariantValues" />
-        </MudStack>
-
-        @if (string.IsNullOrEmpty(_errorMessage) == false)
-        {
-            <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
-        }
-
-        @if (_resultsAvailable)
-        {
-            <CascadingValue Value="Decimals">
-                <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
-            </CascadingValue>
-        }
+<MudStack Spacing="3">
+    <MudStack>
+        <h3>Форма расчета</h3>
+        <InputForm @ref="_inputForm" />
     </MudStack>
-</MudContainer>
+
+    <MudStack Row>
+        <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface" OnClick="Submit" Variant="Variant.Filled">Рассчитать</MudButton>
+        <VariantSelector OnVariantSelected="SetVariantValues" />
+    </MudStack>
+
+    @if (string.IsNullOrEmpty(_errorMessage) == false)
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+
+    @if (_resultsAvailable)
+    {
+        <CascadingValue Value="Decimals">
+            <ResultsDisplay CalculateData="_calculateData" CalculateResult="_calculateResult" />
+        </CascadingValue>
+    }
+</MudStack>

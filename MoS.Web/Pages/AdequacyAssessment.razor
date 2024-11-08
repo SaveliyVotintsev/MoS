@@ -1,0 +1,109 @@
+﻿@page "/adequacy-assessment"
+
+<MudTextField @bind-Value="inputData" Label="Введите данные для 10 экспериментов (YMax, t1, y1, t2, y2 на каждой строке)" Lines="10"  />
+<MudButton OnClick="() => AddExperiments(ref _experiencesModel)" Color="Color.Primary">Добавить модель</MudButton>
+<MudButton OnClick="() => AddExperiments(ref _experiencesReference)" Color="Color.Primary">Добавить эталон</MudButton>
+
+<MudButton Color="@(_results.Count == 0 ? Color.Primary : Color.Surface)" OnClick="CheckingModelAdequacy" Variant="Variant.Filled">Рассчитать</MudButton>
+
+@foreach ((Experience[]? experiences, string? title) in _experiences)
+{
+    <MudTable Items="@experiences" Class="my-4">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">
+                @title
+            </MudText>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>y_max</MudTh>
+            <MudTh>t1</MudTh>
+            <MudTh>y1</MudTh>
+            <MudTh>t2</MudTh>
+            <MudTh>y2</MudTh>
+            <MudTh>сигма</MudTh>
+            <MudTh>t_p</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.YMax.ToString("F6")</MudTd>
+            <MudTd>@context.t1.ToString("F6")</MudTd>
+            <MudTd>@context.y1.ToString("F6")</MudTd>
+            <MudTd>@context.t2.ToString("F6")</MudTd>
+            <MudTd>@context.y2.ToString("F6")</MudTd>
+            <MudTd>@context.overshoot.ToString("F6")</MudTd>
+            <MudTd>@context.tps.ToString("F6")</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@foreach (Result result in _results)
+{
+    <MudPaper Class="my-4 pa-4">
+        <MudText Typo="Typo.h6">
+            @result.Title
+        </MudText>
+        <MudDivider Class="my-4" />
+
+        @foreach (string step in result.Content)
+        {
+            <MudText>@step</MudText>
+        }
+
+    </MudPaper>
+}
+
+@if (_experiencesModelSensitivity.Length == 0 || _sensitivityResults.Count == 0)
+{
+    return;
+}
+
+<MudTable Items="@_experiencesModelSensitivity" Class="my-4">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">
+            Таблица переходных характеристик модели при максимальном и минимальном значении каждого коэффициента
+        </MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>A</MudTh>
+        <MudTh>y_max</MudTh>
+        <MudTh>t1</MudTh>
+        <MudTh>y1</MudTh>
+        <MudTh>t2</MudTh>
+        <MudTh>y2</MudTh>
+        <MudTh>сигма</MudTh>
+        <MudTh>t_p</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Component</MudTd>
+        <MudTd>@context.YMax.ToString("F6")</MudTd>
+        <MudTd>@context.t1.ToString("F6")</MudTd>
+        <MudTd>@context.y1.ToString("F6")</MudTd>
+        <MudTd>@context.t2.ToString("F6")</MudTd>
+        <MudTd>@context.y2.ToString("F6")</MudTd>
+        <MudTd>@context.overshoot.ToString("F6")</MudTd>
+        <MudTd>@context.tps.ToString("F6")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudTable Items="@_sensitivityResults" Class="my-4">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">
+            Таблица результатов расчета чувствительности
+        </MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>G</MudTh>
+        <MudTh>X_g</MudTh>
+        <MudTh>Y_сигма</MudTh>
+        <MudTh>Y_(t_p)</MudTh>
+        <MudTh>Y_g1</MudTh>
+        <MudTh>Y_g2</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.compomemt</MudTd>
+        <MudTd>@context.Xg.ToString("F6")</MudTd>
+        <MudTd>@context.Ysigma.ToString("F6")</MudTd>
+        <MudTd>@context.Ytp.ToString("F6")</MudTd>
+        <MudTd>@context.Yg1.ToString("F6")</MudTd>
+        <MudTd>@context.Yg2.ToString("F6")</MudTd>
+    </RowTemplate>
+</MudTable>
