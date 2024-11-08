@@ -1,21 +1,87 @@
 ﻿@page "/adequacy-assessment"
 
-<MudTextField @bind-Value="inputData"
-              Label="Введите данные для 10 экспериментов (YMax, t1, y1, t2, y2 на каждой строке)"
-              Lines="10" />
-<MudButton Color="Color.Primary"
-           OnClick="() => AddExperiments(ref _experiencesModel)">
-    Добавить модель
-</MudButton>
-<MudButton Color="Color.Primary"
-           OnClick="() => AddExperiments(ref _experiencesReference)">
-    Добавить эталон
-</MudButton>
+<MudButton OnClick="DownloadFileFromURL">Пример таблиц с данными</MudButton>
+<MudGrid>
+    <MudItem md="7"
+             xs="12">
+        <MudTextField @bind-Value="_inputData"
+                      HelperText="10/14 экспериментов"
+                      Label="yMax t1, y1 t2 y2 на каждой строке (через пробел или tab)"
+                      Lines="10"
+                      MaxLines="10" />
+    </MudItem>
+    <MudItem md="5"
+             xs="12">
+        <MudTextField @bind-Value="_inputComponents"
+                      HelperText="@(string.Join(" | ", components.Select(x => $"[{x.Name}] {x.Min} {x.Max}")))"
+                      Label="Min и max компонентов (через пробел или tab)"
+                      Lines="10"
+                      MaxLines="10" />
+    </MudItem>
+</MudGrid>
 
-<MudButton Color="@(_results.Count == 0 ? Color.Primary : Color.Surface)"
+<MudStack AlignItems="AlignItems.Center"
+          Class="my-3"
+          Row>
+    @if (_experiencesModel != null)
+    {
+        <MudIconButton Icon="@Icons.Material.TwoTone.Restore"
+                       OnClick="() => _experiencesModel = null" />
+    }
+    <MudButton Color="Color.Primary"
+               Disabled="@(_experiencesModel != null)"
+               OnClick="() => _experiencesModel = AddExperiments()"
+               Variant="Variant.Filled">
+        Добавить модель
+    </MudButton>
+
+    @if (_experiencesReference != null)
+    {
+        <MudIconButton Icon="@Icons.Material.TwoTone.Restore"
+                       OnClick="() => _experiencesReference = null" />
+    }
+    <MudButton Color="Color.Primary"
+               Disabled="@(_experiencesReference != null)"
+               OnClick="() => _experiencesReference = AddExperiments()"
+               Variant="Variant.Filled">
+        Добавить эталон
+    </MudButton>
+
+    @if (_experiencesModelSensitivity != null)
+    {
+        <MudIconButton Icon="@Icons.Material.TwoTone.Restore"
+                       OnClick="() => _experiencesModelSensitivity = null" />
+    }
+    <MudButton Color="Color.Primary"
+               Disabled="@(_experiencesModelSensitivity != null)"
+               OnClick="() => _experiencesModelSensitivity = AddExperiments(14)"
+               Variant="Variant.Filled">
+        Добавить чувствительность
+    </MudButton>
+
+    <MudSpacer />
+
+    <MudButton Color="Color.Primary"
+               OnClick="() => AddComponents()"
+               Variant="Variant.Filled">
+        Обновить компоненты
+    </MudButton>
+</MudStack>
+
+<MudButton Color="Color.Primary"
+           Disabled="@(_results.Count != 0)"
            OnClick="CheckingModelAdequacy"
            Variant="Variant.Filled">
     Рассчитать
+</MudButton>
+
+<MudButton OnClick="Reset"
+           Variant="Variant.Filled">
+    Сброс
+</MudButton>
+<MudButton OnClick="Restore"
+           Variant="Variant.Filled">
+    Default
 </MudButton>
 
 @foreach ((Experience[]? experiences, string? title) in _experiences)
@@ -48,23 +114,35 @@
     </MudTable>
 }
 
-@foreach (Result result in _results)
+@foreach (IGrouping<string, Result> result in _results.GroupBy(result => result.Title))
 {
     <MudPaper Class="my-4 pa-4">
         <MudText Typo="Typo.h6">
-            @result.Title
+            @result.Key
         </MudText>
         <MudDivider Class="my-4" />
 
-        @foreach (string step in result.Content)
-        {
-            <MudText>@step</MudText>
-        }
+        <MudGrid>
+            @foreach (Result group in result)
+            {
+                <MudItem md="6"
+                         xs="12">
+                    <MudText Color="Color.Primary"
+                             Typo="Typo.subtitle1">
+                        @group.parameter
+                    </MudText>
 
+                    @foreach (string step in group.Content)
+                    {
+                        <MudText>@step</MudText>
+                    }
+                </MudItem>
+            }
+        </MudGrid>
     </MudPaper>
 }
 
-@if (_experiencesModelSensitivity.Length == 0 || _sensitivityResults.Count == 0)
+@if (_experiencesModelSensitivity?.Length == 0 || _sensitivityResults?.Count == 0)
 {
     return;
 }

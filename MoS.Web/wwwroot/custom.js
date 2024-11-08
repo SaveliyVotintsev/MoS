@@ -72,3 +72,11 @@ function calculateFunction(functionString, t) {
     const func = new Function('t', 'return ' + functionString.replace(/exp/g, 'Math.exp').replace(/cos/g, 'Math.cos'));
     return func(t);
 }
+
+window.triggerFileDownload = (fileName, url) => {
+    const anchorElement = document.createElement('a');
+    anchorElement.href = url;
+    anchorElement.download = fileName ?? '';
+    anchorElement.click();
+    anchorElement.remove();
+}

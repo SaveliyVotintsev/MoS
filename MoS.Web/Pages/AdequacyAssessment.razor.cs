@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using System.Globalization;
 
 namespace MoS.Web.Pages;
 
@@ -6,16 +8,38 @@ public partial class AdequacyAssessment
 {
     private readonly List<Result> _results = [];
     private readonly List<SensitivityResult> _sensitivityResults = [];
-    private List<(Experience[], string)> _experiences = [];
-    private Experience[] _experiencesModel = [];
-    private Experience[] _experiencesReference = [];
-    private Experience[] _experiencesModelSensitivity = [];
-    private string inputData;
 
-    private void AddExperiments(ref Experience[] experienc)
+    private readonly Component[] components =
+    [
+        new("k_1"),
+        new("k_2"),
+        new("k_3"),
+        new("k_4"),
+        new("k_5"),
+        new("T_3"),
+        new("T_4"),
+    ];
+
+    private List<(Experience[], string)> _experiences = [];
+    private Experience[]? _experiencesModel;
+    private Experience[]? _experiencesReference;
+    private Experience[]? _experiencesModelSensitivity;
+    private string? _inputData;
+    private string? _inputComponents;
+
+    [Inject]
+    private IJSRuntime JS { get; set; }
+
+    private Experience[]? AddExperiments(int requiredCount = 10)
     {
-        List<Experience> experiences = new();
-        string[] lines = inputData.Replace(",", ".").Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries);
+        if (_inputData == null)
+        {
+            return null;
+        }
+
+        List<Experience> experiences = [];
+
+        string[] lines = _inputData.Replace(",", ".").Split(["\r\n", "\r", "\n", Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string line in lines)
         {
@@ -34,20 +58,61 @@ public partial class AdequacyAssessment
             }
         }
 
-        experienc = experiences.ToArray();
-        inputData = string.Empty;
+        if (experiences.Count != requiredCount)
+        {
+            return null;
+        }
+
+        _inputData = string.Empty;
+        return experiences.ToArray();
+    }
+
+    private void AddComponents()
+    {
+        if (_inputComponents == null)
+        {
+            return;
+        }
+
+        string[] lines = _inputComponents.Replace(",", ".").Split(["\r\n", "\r", "\n", Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+
+        if (lines.Length != components.Length)
+        {
+            return;
+        }
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i];
+            string[] values = line.Split([" ", "\t"], StringSplitOptions.RemoveEmptyEntries);
+
+            if (values.Length == 2
+                && double.TryParse(values[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double min)
+                && double.TryParse(values[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double max))
+            {
+                components[i].Min = min;
+                components[i].Max = max;
+            }
+        }
+
+        _inputComponents = string.Empty;
     }
 
     private void CheckingModelAdequacy()
     {
+        if (_experiencesModel == null || _experiencesReference == null)
+        {
+            return;
+        }
+
         Interpolation(_experiencesModel);
         Interpolation(_experiencesReference);
 
         Overshoot(_experiencesModel);
         Overshoot(_experiencesReference);
 
-        AdequacyAssessment(_experiencesModel.Select(x => x.overshoot).ToArray(), _experiencesReference.Select(x => x.overshoot).ToArray());
-        AdequacyAssessment(_experiencesModel.Select(x => x.tps).ToArray(), _experiencesReference.Select(x => x.tps).ToArray());
+        AdequacyAssessment("Перерегулирование", _experiencesModel.Select(x => x.overshoot).ToArray(), _experiencesReference.Select(x => x.overshoot).ToArray());
+        AdequacyAssessment("t_p", _experiencesModel.Select(x => x.tps).ToArray(), _experiencesReference.Select(x => x.tps).ToArray());
 
         _experiences =
         [
@@ -58,12 +123,12 @@ public partial class AdequacyAssessment
         CheckingModelSensitivity();
         return;
 
-        void AdequacyAssessment(double[] model, double[] reference)
+        void AdequacyAssessment(string parameter, double[] model, double[] reference)
         {
             int N2 = 10;
             int N1 = 10;
 
-            Result result = new("Проверка адекватности модели по средним значениям откликов модели и системы", []);
+            Result result = new("Проверка адекватности модели по средним значениям откликов модели и системы", parameter, []);
             double Yn = 1d / N2 * model.Sum();
             result.Content.Add($"Yn = {Yn:F6}");
 
@@ -85,7 +150,7 @@ public partial class AdequacyAssessment
             result.Content.Add($"{tn:F6} <= {tkr}: {tn <= tkr}");
 
             _results.Add(result);
-            result = new Result("Проверка адекватности модели по дисперсиям отклонений откликов модели от среднего значения откликов системы", []);
+            result = new Result("Проверка адекватности модели по дисперсиям отклонений откликов модели от среднего значения откликов системы", parameter, []);
             double Don = 1d / (N2 - 1) * model.Select(Ynk => Math.Pow(Ynk - Ysn, 2)).Sum();
             result.Content.Add($"Don = {Don:F6}");
             double F;
@@ -110,7 +175,7 @@ public partial class AdequacyAssessment
             result.Content.Add($"{F:F6} < {Fkr}: {F < Fkr}");
             _results.Add(result);
 
-            result = new Result("Проверка адекватности модели по максимальному значению абсолютных отклонений откликов модели от откликов системы", []);
+            result = new Result("Проверка адекватности модели по максимальному значению абсолютных отклонений откликов модели от откликов системы", parameter, []);
 
             double dYn = model.Zip(reference)
                              .Select(x =>
@@ -206,45 +271,10 @@ public partial class AdequacyAssessment
 
     private void CheckingModelSensitivity()
     {
-        _experiencesModelSensitivity =
-        [
-            new Experience(1.08077, 6.09, 1.05601, 6.41, 1.04326),
-            new Experience(1.33873, 7.69, 1.05192, 8.01, 1.04226),
-            new Experience(1.08077, 6.09, 1.05601, 6.41, 1.04326),
-            new Experience(1.33873, 7.69, 1.05192, 8.01, 1.04226),
-            new Experience(1.28671, 5.45, 1.05651, 5.77, 1.01615),
-            new Experience(1.25144, 6.73, 0.94507, 7.05, 0.95846),
-            new Experience(1.08077, 6.09, 1.05601, 6.41, 1.04326),
-            new Experience(1.33873, 7.69, 1.05192, 8.01, 1.04226),
-            new Experience(1.46504, 9.61, 0.93217, 9.93, 0.95097),
-            new Experience(1.15085, 5.45, 1.06469, 5.77, 1.03972),
-            new Experience(1.15085, 5.45, 1.06469, 5.77, 1.03972),
-            new Experience(1.15085, 5.45, 1.06469, 5.77, 1.03972),
-            new Experience(1.15085, 5.45, 1.06469, 5.77, 1.03972),
-            new Experience(1.15085, 5.45, 1.06469, 5.77, 1.03972),
-        ];
-
-        string[] componentsName =
-        [
-            "k_1",
-            "k_2",
-            "k_3",
-            "k_4",
-            "k_5",
-            "T_3",
-            "T_4",
-        ];
-
-        (double min, double max)[] components =
-        [
-            (0.20, 0.60),
-            (2.00, 6.00),
-            (3.00, 9.00),
-            (0.45, 1.35),
-            (0.50, 1.50),
-            (0.35, 1.05),
-            (0.50, 1.50),
-        ];
+        if (_experiencesModelSensitivity == null)
+        {
+            return;
+        }
 
         List<double> dX = components.Select(tuple =>
             {
@@ -258,7 +288,7 @@ public partial class AdequacyAssessment
 
         for (int i = 0; i < _experiencesModelSensitivity.Length; i++)
         {
-            string component = componentsName[i / 2];
+            string component = components[i / 2].Name;
 
             if (i % 2 == 0)
             {
@@ -280,7 +310,7 @@ public partial class AdequacyAssessment
         for (int i = 0; i < dX.Count; i++)
         {
             double dXq = dX[i];
-            _sensitivityResults.Add(new SensitivityResult(componentsName[i], dXq, dYo[i], dYt[i], dYq1[i], dYq2[i]));
+            _sensitivityResults.Add(new SensitivityResult(components[i].Name, dXq, dYo[i], dYt[i], dYq1[i], dYq2[i]));
         }
     }
 
@@ -297,6 +327,108 @@ public partial class AdequacyAssessment
         }
 
         return dY;
+    }
+
+    private void Restore()
+    {
+        _inputData = """
+                     1,25903	7,05	0,93832	7,37	0,9764
+                     1,14155	7,69	0,93576	8,01	0,988
+                     1,34611	12,17	0,94904	12,49	0,95569
+                     1,27783	7,69	0,93318	8,01	0,98453
+                     1,34475	7,69	0,93392	8,01	0,99908
+                     1,30525	7,69	0,94573	8,01	0,97807
+                     1,34047	7,37	0,90377	7,69	0,9856
+                     1,31038	7,69	0,93724	8,01	0,98153
+                     1,30455	7,05	0,86443	7,37	0,97797
+                     1,38854	7,37	0,94441	7,69	0,98043
+
+                     """;
+
+        _experiencesModel = AddExperiments();
+
+        _inputData = """
+                     1,49119	4,49	1,10528	4,81	1,04984
+                     1,42638	7,05	0,92838	7,37	0,97819
+                     1,48836	7,05	0,92490	7,37	0,99392
+                     1,25639	7,05	0,92291	7,37	0,99035
+                     1,46000	7,05	0,92441	7,37	0,99035
+                     1,34600	7,37	0,93887	7,69	0,97849
+                     1,20367	7,05	0,92938	7,37	0,96103
+                     1,46049	6,41	0,86582	6,37	0,99633
+                     1,46000	7,37	0,92850	8,01	0,99879
+                     1,26633	6,73	0,90711	7,05	0,99353
+
+                     """;
+
+        _experiencesReference = AddExperiments();
+
+        _inputData = """
+                     1,08077	6,09	1,05601	6,41	1,04326
+                     1,33873	7,69	1,05192	8,01	1,04226
+                     1,08077	6,09	1,05601	6,41	1,04326
+                     1,33873	7,69	1,05192	8,01	1,04226
+                     1,28671	5,45	1,05651	5,77	1,01615
+                     1,25144	6,73	0,94507	7,05	0,95846
+                     1,08077	6,09	1,05601	6,41	1,04326
+                     1,33873	7,69	1,05192	8,01	1,04226
+                     1,46504	9,61	0,93217	9,93	0,95097
+                     1,15085	5,45	1,06469	5,77	1,03972
+                     1,23651	4,49	1,09403	4,81	1,04847
+                     1,29703	7,05	0,93917	7,37	0,9573
+                     1,12699	3,53	1,05327	3,85	1,02578
+                     1,32786	8,97	0,94273	9,29	0,96579
+
+                     """;
+
+        _experiencesModelSensitivity = AddExperiments(14);
+
+        (double min, double max)[] componentsData =
+        [
+            (0.20, 0.60),
+            (2.00, 6.00),
+            (3.00, 9.00),
+            (0.45, 1.35),
+            (0.50, 1.50),
+            (0.35, 1.05),
+            (0.50, 1.50),
+        ];
+
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component component = components[i];
+            (component.Min, component.Max) = componentsData[i];
+        }
+    }
+
+    private void Reset()
+    {
+        _results.Clear();
+        _sensitivityResults.Clear();
+        _experiences.Clear();
+        _experiencesModel = null;
+        _experiencesReference = null;
+        _experiencesModelSensitivity = null;
+    }
+
+    private async Task DownloadFileFromURL()
+    {
+        string fileName = "example.ods";
+        string fileURL = "data/example.ods";
+        await JS.InvokeVoidAsync("triggerFileDownload", fileName, fileURL);
+    }
+
+    private class Component(string name)
+    {
+        public string Name { get; } = name;
+        public double Min { get; set; }
+        public double Max { get; set; }
+
+        public void Deconstruct(out double min, out double max)
+        {
+            min = Min;
+            max = Max;
+        }
     }
 
     private class Experience(double YMax, double t1, double y1, double t2, double y2)
@@ -321,5 +453,5 @@ public partial class AdequacyAssessment
 
     private record SensitivityResult(string compomemt, double Xg, double Ysigma, double Ytp, double Yg1, double Yg2);
 
-    private record Result(string Title, List<string> Content);
+    private record Result(string Title, string parameter, List<string> Content);
 }
