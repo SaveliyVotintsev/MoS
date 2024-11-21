@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 using System.Globalization;
 
 namespace MoS.Web.Pages;
@@ -28,6 +29,9 @@ public partial class AdequacyAssessment
     private string? _inputComponents;
 
     [Inject]
+    public ISnackbar Snackbar { get; set; }
+
+    [Inject]
     private IJSRuntime JS { get; set; }
 
     private Experience[]? AddExperiments(int requiredCount = 10)
@@ -38,6 +42,7 @@ public partial class AdequacyAssessment
         }
 
         List<Experience> experiences = [];
+        List<string> errorMessages = [];
 
         string[] lines = _inputData.Replace(",", ".").Split(["\r\n", "\r", "\n", Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
 
@@ -45,25 +50,58 @@ public partial class AdequacyAssessment
         {
             string[] values = line.Split([" ", "\t"], StringSplitOptions.RemoveEmptyEntries);
 
-            if (values.Length == 5
-                && double.TryParse(values[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double yMax)
-                && double.TryParse(values[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double t1)
-                && double.TryParse(values[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double y1)
-                && double.TryParse(values[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double t2)
-                && double.TryParse(values[4], NumberStyles.Any, CultureInfo.InvariantCulture, out double y2))
+            if (values.Length != 5)
             {
-                Experience experience = new(yMax, t1, y1, t2, y2);
-                experiences.Add(experience);
-                Console.WriteLine(experience);
+                errorMessages.Add($"Неверное количество значений в строке: \"{line}\". Ожидалось 5 значений, получено {values.Length}. Формат строки: yMax t1 y1 t2 y2");
+                continue;
             }
+
+            if (!double.TryParse(values[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double yMax))
+            {
+                errorMessages.Add($"Невозможно преобразовать значение \"{values[0]}\" в double.");
+            }
+
+            if (!double.TryParse(values[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double t1))
+            {
+                errorMessages.Add($"Невозможно преобразовать значение \"{values[1]}\" в double.");
+            }
+
+            if (!double.TryParse(values[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double y1))
+            {
+                errorMessages.Add($"Невозможно преобразовать значение \"{values[2]}\" в double.");
+            }
+
+            if (!double.TryParse(values[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double t2))
+            {
+                errorMessages.Add($"Невозможно преобразовать значение \"{values[3]}\" в double.");
+            }
+
+            if (!double.TryParse(values[4], NumberStyles.Any, CultureInfo.InvariantCulture, out double y2))
+            {
+                errorMessages.Add($"Невозможно преобразовать значение \"{values[4]}\" в double.");
+            }
+
+            Experience experience = new(yMax, t1, y1, t2, y2);
+            experiences.Add(experience);
         }
 
         if (experiences.Count != requiredCount)
+        {
+            errorMessages.Add($"Ожидалось {requiredCount} экспериментов, но было добавлено {experiences.Count}.");
+        }
+
+        foreach (string message in errorMessages)
+        {
+            Snackbar.Add(message, Severity.Error);
+        }
+
+        if (errorMessages.Count != 0)
         {
             return null;
         }
 
         _inputData = string.Empty;
+
         return experiences.ToArray();
     }
 
@@ -78,6 +116,7 @@ public partial class AdequacyAssessment
 
         if (lines.Length != components.Length)
         {
+            Snackbar.Add($"Неверное количество компонентов. Ожидалось {components.Length} значений, получено {lines.Length}.", Severity.Error);
             return;
         }
 
@@ -86,13 +125,33 @@ public partial class AdequacyAssessment
             string line = lines[i];
             string[] values = line.Split([" ", "\t"], StringSplitOptions.RemoveEmptyEntries);
 
-            if (values.Length == 2
-                && double.TryParse(values[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double min)
-                && double.TryParse(values[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double max))
+            if (values.Length != 2)
             {
-                components[i].Min = min;
-                components[i].Max = max;
+                Snackbar.Add($"Неверное количество значений в строке: \"{line}\" (компонент {components[i].Name}). Ожидалось 2 значений, получено {values.Length}. Формат строки: min max", Severity.Error);
+                continue;
             }
+
+            bool isFail = false;
+
+            if (!double.TryParse(values[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double min))
+            {
+                isFail = true;
+                Snackbar.Add($"Невозможно преобразовать значение \"{values[0]}\" в double.", Severity.Error);
+            }
+
+            if (!double.TryParse(values[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double max))
+            {
+                isFail = true;
+                Snackbar.Add($"Невозможно преобразовать значение \"{values[1]}\" в double.", Severity.Error);
+            }
+
+            if (isFail)
+            {
+                continue;
+            }
+
+            components[i].Min = min;
+            components[i].Max = max;
         }
 
         _inputComponents = string.Empty;
