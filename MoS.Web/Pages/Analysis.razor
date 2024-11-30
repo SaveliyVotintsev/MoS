@@ -1,0 +1,46 @@
+﻿@page "/analysis"
+@using System.Globalization
+
+<MudStack Spacing="3">
+    <MudStack>
+        <h3>Форма расчета</h3>
+        <InputForm @ref="_inputForm" />
+    </MudStack>
+
+    <MudStack Row>
+        <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface"
+                   OnClick="Submit"
+                   Variant="Variant.Filled">
+            Рассчитать
+        </MudButton>
+        <VariantSelector OnVariantSelected="SetVariantValues" />
+    </MudStack>
+
+    @if (string.IsNullOrEmpty(_errorMessage) == false)
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+
+    @if (_resultsAvailable)
+    {
+        <table>
+            <MudTr>
+                <MudTd>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+                <MudTd></MudTd>
+            </MudTr>
+            <MudTr>
+                <MudTd>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                <MudTd>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+            </MudTr>
+        </table>
+
+        @*<CascadingValue Value="Decimals">
+            <ResultsDisplay CalculateData="_calculateData"
+                            CalculateResult="_calculateResult" />
+        </CascadingValue>*@
+    }
+</MudStack>

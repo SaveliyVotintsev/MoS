@@ -1,4 +1,5 @@
 ﻿@using MoS.Web.Services
+@using System.Globalization
 @inject IClipboardService ClipboardService
 
 @if (CalculateData == null || CalculateResult == null)
@@ -48,11 +49,31 @@ else
 
         <MudExpansionPanel Text="Расчеты">
             <MudList T="string">
-                <MudListItem>B<sub>0</sub>: @CalculateData.b0.ToString($"F{Decimals}")</MudListItem>
-                <MudListItem>A<sub>0</sub>: @CalculateData.a0.ToString($"F{Decimals}")</MudListItem>
-                <MudListItem>A<sub>1</sub>: @CalculateData.a1.ToString($"F{Decimals}")</MudListItem>
-                <MudListItem>A<sub>2</sub>: @CalculateData.a2.ToString($"F{Decimals}")</MudListItem>
-                <MudListItem>A<sub>3</sub>: @CalculateData.a3.ToString($"F{Decimals}")</MudListItem>
+                <ListItem Ripple="false"
+                          T="string"
+                          Value="@CalculateData.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)">
+                    B<sub>0</sub>: @CalculateData.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)
+                </ListItem>
+                <ListItem Ripple="false"
+                          T="string"
+                          Value="@CalculateData.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)">
+                    A<sub>0</sub>: @CalculateData.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)
+                </ListItem>
+                <ListItem Ripple="false"
+                          T="string"
+                          Value="@CalculateData.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)">
+                    A<sub>1</sub>: @CalculateData.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)
+                </ListItem>
+                <ListItem Ripple="false"
+                          T="string"
+                          Value="@CalculateData.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)">
+                    A<sub>2</sub>: @CalculateData.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)
+                </ListItem>
+                <ListItem Ripple="false"
+                          T="string"
+                          Value="@CalculateData.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)">
+                    A<sub>3</sub>: @CalculateData.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)
+                </ListItem>
             </MudList>
 
             <MudExpansionPanels MultiExpansion
