@@ -34,6 +34,8 @@ public partial class CalculationForm
         {
             _resultsAvailable = false;
             _errorMessage = $"Ошибка при расчете: {exception.Message}";
+            StateHasChanged();
+            return;
         }
 
         _resultsAvailable = true;

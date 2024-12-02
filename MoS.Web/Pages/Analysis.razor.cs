@@ -4,6 +4,8 @@ using Microsoft.JSInterop;
 using MoS.Web.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
+using NCalc;
+using System.Globalization;
 using System.Numerics;
 
 namespace MoS.Web.Pages;
@@ -20,6 +22,10 @@ public partial class Analysis
     private bool _resultsAvailable;
     private string? _errorMessage;
     private InputForm? _inputForm;
+    private AsyncExpression _expression;
+    private List<double> _ts;
+    private Result? _res;
+    private GraphComponent? _graph;
 
     [Inject]
     private IJSRuntime JsRuntime { get; set; } = null!;
@@ -28,21 +34,20 @@ public partial class Analysis
     {
         try
         {
-            CalculateResults();
+            await CalculateResults();
         }
         catch (Exception exception)
         {
             _resultsAvailable = false;
             _errorMessage = $"Ошибка при расчете: {exception.Message}";
+            StateHasChanged();
+            return;
         }
 
         _resultsAvailable = true;
         _isReloadRequired = false;
         _errorMessage = null;
         StateHasChanged();
-
-        await Task.Delay(100);
-        await JsRuntime.InvokeVoidAsync("scrollToElement", ResultId);
     }
 
     private void SetVariantValues(VariantData values)
@@ -52,7 +57,7 @@ public partial class Analysis
         StateHasChanged();
     }
 
-    private void CalculateResults()
+    private async Task CalculateResults()
     {
         if (_inputForm == null)
         {
@@ -81,7 +86,72 @@ public partial class Analysis
 
         string result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
 
+        _expression = new AsyncExpression(result, ExpressionOptions.IterateParameters | ExpressionOptions.IgnoreCaseAtBuiltInFunctions, CultureInfo.InvariantCulture);
+        _ts = [];
+
+        for (double i = 0; i <= _graph.MaxT; i += _graph.Step)
+        {
+            _ts.Add(i);
+        }
+
+        _expression.Parameters["t"] = _ts.ToArray();
+
         _calculateResult = new CalculateResult(roots, derivatives, hBezEList, eh, result);
+        await Calc();
+        await _graph.Generate(_calculateResult.Result, true);
+
         StateHasChanged();
     }
+
+    private async Task Calc()
+    {
+        object? o = await _expression.EvaluateAsync();
+
+        if (o is not List<object> a)
+        {
+            return;
+        }
+
+        double[] b = a.Cast<double>().ToArray();
+        double YMax = b.Max();
+
+        (double t1, double y1) = (0, 0);
+        (double t2, double y2) = (0, 0);
+
+        for (int i = b.Length - 2; i >= 0; i--)
+        {
+            if (b[i] is > 1.05 or < 0.95)
+            {
+                t1 = _ts[i];
+                t2 = _ts[i + 1];
+
+                y1 = b[i];
+                y2 = b[i + 1];
+
+                break;
+            }
+        }
+
+        double y = y1 > 1.05 ? 1.05 : 0.95;
+        double tps = (t2 * y1 - t1 * y2 - t2 * y + t1 * y) / (y1 - y2);
+        double overshoot = (YMax - 1) / 1d * 100d;
+
+        double established = 0;
+
+        int count = 0;
+
+        int end = Math.Max(0, b.Length - 3);
+
+        for (int i = b.Length - 1; i >= end; i--)
+        {
+            count++;
+            established += b[i];
+        }
+
+        established /= count;
+
+        _res = new Result(t1, y1, t2, y2, YMax, tps, overshoot, established);
+    }
+
+    private record Result(double t1, double y1, double t2, double y2, double YMax, double tps, double overshoot, double established);
 }

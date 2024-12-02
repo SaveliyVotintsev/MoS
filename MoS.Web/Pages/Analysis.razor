@@ -21,26 +21,75 @@
         <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
     }
 
-    @if (_resultsAvailable)
-    {
-        <table>
-            <MudTr>
-                <MudTd>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                <MudTd></MudTd>
-                <MudTd></MudTd>
-                <MudTd></MudTd>
-            </MudTr>
-            <MudTr>
-                <MudTd>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                <MudTd>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                <MudTd>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                <MudTd>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-            </MudTr>
-        </table>
+    <GraphComponent @ref="_graph" />
 
-        @*<CascadingValue Value="Decimals">
-            <ResultsDisplay CalculateData="_calculateData"
-                            CalculateResult="_calculateResult" />
-        </CascadingValue>*@
+    @if (_resultsAvailable && _res != null)
+    {
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Передаточная функция системы</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <table style="width: 100%;">
+                    <MudTr>
+                        <MudTd>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd></MudTd>
+                        <MudTd></MudTd>
+                        <MudTd></MudTd>
+                    </MudTr>
+                    <MudTr>
+                        <MudTd>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                        <MudTd>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
+                    </MudTr>
+                </table>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Анализ качества системы</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>
+                    Время регулирования: tp=@_res.tps.ToString($"F{Decimals}", CultureInfo.InvariantCulture) с.
+                </MudText>
+
+                <MudText>
+                    Перерегулирование: s=@_res.overshoot.ToString($"F{Decimals}", CultureInfo.InvariantCulture)%.
+                </MudText>
+
+                <MudText>
+                    Установившееся значение: h=@_res.established.ToString($"F{Decimals}", CultureInfo.InvariantCulture).
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Справочные данные</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <table style="width: 100%;">
+                    <MudTh>y_max</MudTh>
+                    <MudTh>t1</MudTh>
+                    <MudTh>y1</MudTh>
+                    <MudTh>t2</MudTh>
+                    <MudTh>y2</MudTh>
+                    <MudTh>сигма</MudTh>
+                    <MudTh>t_p</MudTh>
+                    <MudTr>
+                        <MudTd>@_res.YMax.ToString("F6")</MudTd>
+                        <MudTd>@_res.t1.ToString("F6")</MudTd>
+                        <MudTd>@_res.y1.ToString("F6")</MudTd>
+                        <MudTd>@_res.t2.ToString("F6")</MudTd>
+                        <MudTd>@_res.y2.ToString("F6")</MudTd>
+                        <MudTd>@_res.overshoot.ToString("F6")</MudTd>
+                        <MudTd>@_res.tps.ToString("F6")</MudTd>
+                    </MudTr>
+                </table>
+            </MudCardContent>
+        </MudCard>
     }
 </MudStack>
