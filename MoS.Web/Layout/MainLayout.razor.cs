@@ -12,6 +12,8 @@ public partial class MainLayout
     private bool _isDarkMode = true;
     private MudTheme? _theme;
 
+    private MudThemeProvider _mudThemeProvider = null!;
+
     public string DarkLightModeButtonIcon => _isDarkMode switch
     {
         true => Icons.Material.Rounded.AutoMode,
@@ -21,6 +23,15 @@ public partial class MainLayout
     [Inject]
     private ILocalStorageService LocalStorage { get; set; } = null!;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+            StateHasChanged();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -28,7 +39,25 @@ public partial class MainLayout
         bool? isDarkMod = await LocalStorage.GetItemAsync<bool?>(LocalStorageKey);
         _isDarkMode = isDarkMod ?? true;
 
-        _theme = new MudTheme();
+        _theme = new MudTheme
+        {
+            PaletteLight = new PaletteLight
+            {
+                Primary = Colors.Blue.Darken1,
+                AppbarBackground = Colors.Blue.Darken1,
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary = Colors.Blue.Default,
+            },
+        };
+    }
+
+    private Task OnSystemPreferenceChanged(bool newValue)
+    {
+        _isDarkMode = newValue;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void DrawerToggle()

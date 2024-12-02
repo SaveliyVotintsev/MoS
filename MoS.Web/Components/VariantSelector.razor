@@ -1,7 +1,9 @@
 ﻿@if (Variants is { Count: > 0 })
 {
     <MudSelect @bind-Value="SelectedVariant"
-               Label="Выберите вариант">
+               HelperText="Укажите выданный вам вариант"
+               Label="Вариант"
+               Variant="Variant.Outlined">
         <MudSelectItem Value="@DefaultVariant">Ручной</MudSelectItem>
         @foreach (int key in Variants.Keys)
         {

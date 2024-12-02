@@ -11,7 +11,6 @@ namespace MoS.Web.Pages;
 public partial class CalculationForm
 {
     private const string ResultId = "result";
-    private const int Decimals = 6;
 
     private CalculateData? _calculateData;
     private CalculateResult? _calculateResult;
@@ -20,6 +19,8 @@ public partial class CalculationForm
     private bool _resultsAvailable;
     private string? _errorMessage;
     private InputForm? _inputForm;
+
+    private int Decimals { get; set; } = 6;
 
     [Inject]
     private IJSRuntime JsRuntime { get; set; } = null!;
@@ -79,7 +80,7 @@ public partial class CalculationForm
         Complex[] hBezEList = roots.Zip(derivatives, (a, b) => ComplexFormatter.HBezE(b0, a, b)).ToArray();
 
         int length = roots.All(x => x.IsReal()) ? roots.Length : roots.Length - 1;
-        string[] eh = roots.Zip(hBezEList, (a, b) => ComplexFormatter.ToEHAlt(b, a)).Take(length).ToArray();
+        string[] eh = roots.Zip(hBezEList, (a, b) => ComplexFormatter.ToEHAlt(b, a, Decimals)).Take(length).ToArray();
 
         string result = $"1 {string.Join(" ", eh.Select(e => e.StartsWith('-') ? e : $"+ {e}"))}".Replace(",", ".");
 

@@ -1,17 +1,25 @@
 ﻿@page "/"
+@using System.Globalization
 
 <MudStack Spacing="3">
-    <MudStack>
-        <h3>Форма расчета</h3>
-        <InputForm @ref="_inputForm" />
-    </MudStack>
+    <InputForm @ref="_inputForm" />
 
-    <MudStack Row>
+    <MudStack AlignItems="AlignItems.Stretch"
+              Row
+              Wrap="Wrap.Wrap">
         <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface"
                    OnClick="Submit"
                    Variant="Variant.Filled">
             Рассчитать
         </MudButton>
+        <MudNumericField @bind-Value="Decimals"
+                         Culture="CultureInfo.InvariantCulture"
+                         DebounceInterval="500"
+                         HelperText="Кол-во знаков после запятой"
+                         Label="Точность"
+                         Max="12"
+                         Min="1"
+                         Variant="Variant.Outlined" />
         <VariantSelector OnVariantSelected="SetVariantValues" />
     </MudStack>
 

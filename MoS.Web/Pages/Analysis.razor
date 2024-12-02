@@ -2,17 +2,24 @@
 @using System.Globalization
 
 <MudStack Spacing="3">
-    <MudStack>
-        <h3>Форма расчета</h3>
-        <InputForm @ref="_inputForm" />
-    </MudStack>
+    <InputForm @ref="_inputForm" />
 
-    <MudStack Row>
+    <MudStack AlignItems="AlignItems.Stretch"
+              Row
+              Wrap="Wrap.Wrap">
         <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface"
                    OnClick="Submit"
                    Variant="Variant.Filled">
             Рассчитать
         </MudButton>
+        <MudNumericField @bind-Value="Decimals"
+                         Culture="CultureInfo.InvariantCulture"
+                         DebounceInterval="500"
+                         HelperText="Кол-во знаков после запятой"
+                         Label="Точность"
+                         Max="12"
+                         Min="1"
+                         Variant="Variant.Outlined" />
         <VariantSelector OnVariantSelected="SetVariantValues" />
     </MudStack>
 
@@ -23,27 +30,31 @@
 
     <GraphComponent @ref="_graph" />
 
-    @if (_resultsAvailable && _res != null)
+    @if (_resultsAvailable && _analysisResult != null)
     {
         <MudCard>
             <MudCardHeader>
                 <MudText Typo="Typo.h6">Передаточная функция системы</MudText>
             </MudCardHeader>
             <MudCardContent>
-                <table style="width: 100%;">
-                    <MudTr>
-                        <MudTd>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd></MudTd>
-                        <MudTd></MudTd>
-                        <MudTd></MudTd>
-                    </MudTr>
-                    <MudTr>
-                        <MudTd>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                        <MudTd>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</MudTd>
-                    </MudTr>
-                </table>
+                <MudSimpleTable Bordered
+                                Hover
+                                Style="overflow-x: auto;">
+                    <tbody>
+                    <tr>
+                        <td>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                    </tr>
+                    </tbody>
+                </MudSimpleTable>
             </MudCardContent>
         </MudCard>
 
@@ -53,15 +64,18 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudText>
-                    Время регулирования: tp=@_res.tps.ToString($"F{Decimals}", CultureInfo.InvariantCulture) с.
+                    Время регулирования:
+                    tp=@_analysisResult.Tps.ToString($"F{Decimals}") с.
                 </MudText>
 
                 <MudText>
-                    Перерегулирование: s=@_res.overshoot.ToString($"F{Decimals}", CultureInfo.InvariantCulture)%.
+                    Перерегулирование:
+                    s=@_analysisResult.Overshoot.ToString($"F{Decimals}")%.
                 </MudText>
 
                 <MudText>
-                    Установившееся значение: h=@_res.established.ToString($"F{Decimals}", CultureInfo.InvariantCulture).
+                    Установившееся значение:
+                    h=@_analysisResult.Established.ToString($"F{Decimals}").
                 </MudText>
             </MudCardContent>
         </MudCard>
@@ -71,24 +85,32 @@
                 <MudText Typo="Typo.h6">Справочные данные</MudText>
             </MudCardHeader>
             <MudCardContent>
-                <table style="width: 100%;">
-                    <MudTh>y_max</MudTh>
-                    <MudTh>t1</MudTh>
-                    <MudTh>y1</MudTh>
-                    <MudTh>t2</MudTh>
-                    <MudTh>y2</MudTh>
-                    <MudTh>сигма</MudTh>
-                    <MudTh>t_p</MudTh>
-                    <MudTr>
-                        <MudTd>@_res.YMax.ToString("F6")</MudTd>
-                        <MudTd>@_res.t1.ToString("F6")</MudTd>
-                        <MudTd>@_res.y1.ToString("F6")</MudTd>
-                        <MudTd>@_res.t2.ToString("F6")</MudTd>
-                        <MudTd>@_res.y2.ToString("F6")</MudTd>
-                        <MudTd>@_res.overshoot.ToString("F6")</MudTd>
-                        <MudTd>@_res.tps.ToString("F6")</MudTd>
-                    </MudTr>
-                </table>
+                <MudSimpleTable Bordered
+                                Hover
+                                Style="overflow-x: auto;">
+                    <thead>
+                    <tr>
+                        <th>y_max</th>
+                        <th>t1</th>
+                        <th>y1</th>
+                        <th>t2</th>
+                        <th>y2</th>
+                        <th>сигма</th>
+                        <th>t_p</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>@_analysisResult.YMax.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.T1.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.Y1.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.T2.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.Y2.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.Overshoot.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.Tps.ToString($"F{Decimals}")</td>
+                    </tr>
+                    </tbody>
+                </MudSimpleTable>
             </MudCardContent>
         </MudCard>
     }
