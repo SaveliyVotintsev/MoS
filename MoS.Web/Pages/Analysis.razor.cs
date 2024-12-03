@@ -1,4 +1,6 @@
 ﻿using MathNet.Numerics;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MoS.Web.Components;
 using MoS.Web.Models;
 using MoS.Web.Services;
@@ -13,7 +15,6 @@ public partial class Analysis
     private CalculateData? _calculateData;
     private CalculateResult? _calculateResult;
 
-    private bool _isReloadRequired = true;
     private bool _resultsAvailable;
     private string? _errorMessage;
 
@@ -23,7 +24,12 @@ public partial class Analysis
     private AsyncExpression? _expression;
     private List<double>? _steps;
     private Result? _analysisResult;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = default!;
+
     private int Decimals { get; set; } = 6;
+    private string Format => $"F{Decimals}";
 
     private static (double t1, double y1, double t2, double y2) FindBoundaryValues(double[] values, List<double> steps)
     {
@@ -48,21 +54,15 @@ public partial class Analysis
 
     private static double CalculateEstablishedAverage(double[] values)
     {
-        int count = 0;
-        double established = 0;
-        int end = Math.Max(0, values.Length - 3);
-
-        for (int i = values.Length - 1; i >= end; i--)
-        {
-            count++;
-            established += values[i];
-        }
-
-        return established / count;
+        double established = values.Sum();
+        return established / values.Length;
     }
 
     private async Task Submit()
     {
+        _resultsAvailable = false;
+        StateHasChanged();
+
         try
         {
             await CalculateResults();
@@ -76,15 +76,25 @@ public partial class Analysis
         }
 
         _resultsAvailable = true;
-        _isReloadRequired = false;
         _errorMessage = null;
+        StateHasChanged();
+        await ReloadFormulas();
+    }
+
+    private async Task ReloadFormulas()
+    {
+        if (_analysisResult != null)
+        {
+            _analysisResult.Formulas = UpdateFormulas(_analysisResult);
+        }
+
+        await JsRuntime.InvokeVoidAsync("resetMath");
         StateHasChanged();
     }
 
     private void SetVariantValues(VariantData values)
     {
         _inputForm?.SetData(values);
-        _isReloadRequired = true;
         StateHasChanged();
     }
 
@@ -155,11 +165,64 @@ public partial class Analysis
 
         double y = y1 > 1.05 ? 1.05 : 0.95;
         double tps = (t2 * y1 - t1 * y2 - t2 * y + t1 * y) / (y1 - y2);
-        double overshoot = (yMax - 1) / 1d * 100d;
-        double established = CalculateEstablishedAverage(values);
+        double[] establishedValues = values[^3..];
+        double established = CalculateEstablishedAverage(establishedValues);
+        double overshoot = (yMax - established) / established * 100d;
 
-        _analysisResult = new Result(t1, y1, t2, y2, yMax, tps, overshoot, established);
+        _analysisResult = new Result(t1, y1, t2, y2,
+            yMax, tps, overshoot, established, y)
+        {
+            EstablishedValues = establishedValues,
+        };
+
+        _analysisResult.Formulas = UpdateFormulas(_analysisResult);
     }
 
-    private record Result(double T1, double Y1, double T2, double Y2, double YMax, double Tps, double Overshoot, double Established);
+    private Formulas UpdateFormulas(Result analysisResult)
+    {
+        (double t1, double y1, double t2, double y2, double yMax, double tps, double overshoot, double established, double y) = analysisResult;
+        double[] establishedValues = analysisResult.EstablishedValues;
+
+        string timeRegulationFormula =
+            $$"""
+              $$     
+              t_p = 
+              \frac{t_2 \cdot y_1 - t_1 \cdot y_2 - t_2 \cdot y + t_1 \cdot y}{y_1 - y_2} = 
+              \frac{{{t2.ToString(Format)}} \cdot {{y1.ToString(Format)}} - {{t1.ToString(Format)}} \cdot {{y2.ToString(Format)}} - {{t2.ToString(Format)}} \cdot {{y.ToString(Format)}} + {{t1.ToString(Format)}} \cdot {{y.ToString(Format)}}}{{{y1.ToString(Format)}} - {{y2.ToString(Format)}}}
+              = {{tps.ToString(Format)}}
+              $$
+              """;
+
+        string overshootFormula =
+            $$$"""
+               $$
+               \sigma = \frac{y_{\text{макс}} - y_\text{уст}}{y_\text{уст}} \times 100\% =
+               \sigma = \frac{{{{yMax.ToString(Format)}}} - {{{established.ToString(Format)}}}}{{{{established.ToString(Format)}}}} \times 100\% =
+               {{{overshoot.ToString(Format)}}}\%
+               $$
+               """;
+
+        string steadyStateFormula =
+            $$$"""
+               $$
+               h = \frac{{1}}{{n}} \sum_{{i=1}}^{{n}} y_i = 
+               \frac{{{{string.Join('+', establishedValues.Select(x => x.ToString(Format)))}}}}{{{{establishedValues.Length}}}} = 
+               {{{established.ToString(Format)}}}
+               $$
+               """;
+
+        Formulas formulas = new(new MarkupString(timeRegulationFormula),
+            new MarkupString(overshootFormula),
+            new MarkupString(steadyStateFormula));
+
+        return formulas;
+    }
+
+    private record Result(double T1, double Y1, double T2, double Y2, double YMax, double Tps, double Overshoot, double Established, double Y)
+    {
+        public Formulas Formulas { get; set; }
+        public double[] EstablishedValues { get; set; }
+    }
+
+    private record Formulas(MarkupString TimeRegulation, MarkupString Overshoot, MarkupString SteadyState);
 }

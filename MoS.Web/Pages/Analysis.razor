@@ -7,7 +7,7 @@
     <MudStack AlignItems="AlignItems.Stretch"
               Row
               Wrap="Wrap.Wrap">
-        <MudButton Color="_isReloadRequired ? Color.Primary : Color.Surface"
+        <MudButton Color="Color.Primary"
                    OnClick="Submit"
                    Variant="Variant.Filled">
             Рассчитать
@@ -42,16 +42,16 @@
                                 Style="overflow-x: auto;">
                     <tbody>
                     <tr>
-                        <td>@_calculateData?.b0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.b0.ToString(Format, CultureInfo.InvariantCulture)</td>
                         <td></td>
                         <td></td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td>@_calculateData?.a3.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
-                        <td>@_calculateData?.a2.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
-                        <td>@_calculateData?.a1.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
-                        <td>@_calculateData?.a0.ToString($"F{Decimals}", CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a3.ToString(Format, CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a2.ToString(Format, CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a1.ToString(Format, CultureInfo.InvariantCulture)</td>
+                        <td>@_calculateData?.a0.ToString(Format, CultureInfo.InvariantCulture)</td>
                     </tr>
                     </tbody>
                 </MudSimpleTable>
@@ -60,22 +60,70 @@
 
         <MudCard>
             <MudCardHeader>
-                <MudText Typo="Typo.h6">Анализ качества системы</MudText>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Анализ качества системы</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton OnClick="ReloadFormulas"
+                                   Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   Icon="@Icons.Material.TwoTone.Refresh" />
+                </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent>
+                <MudText Class="my-2"
+                         Typo="Typo.h6">
+                    Время регулирования
+                </MudText>
+                <MudDivider />
                 <MudText>
-                    Время регулирования:
-                    tp=@_analysisResult.Tps.ToString($"F{Decimals}") с.
+                    Время регулирования (\(t_p\)) - это время, необходимое для перехода сигнала от одного значения до
+                    другого.
+                    <br />
+                    \( t_p \) = @_analysisResult.Tps.ToString(Format) с.
+                </MudText>
+                <MudText>
+                    <p style="overflow-x: auto;">@_analysisResult.Formulas.TimeRegulation</p>
+                    Где:
+                    <br />
+                    - \( t_1, y_1 \) — время и значение при первом переходе. <br />
+                    - \( t_2, y_2 \) — время и значение при втором переходе. <br />
+                    - \( y \) — значение для расчета времени регулирования (0.95 или 1.05). <br />
                 </MudText>
 
+                <MudText Class="my-2"
+                         Typo="Typo.h6">
+                    Перерегулирование
+                </MudText>
+                <MudDivider />
                 <MudText>
-                    Перерегулирование:
-                    s=@_analysisResult.Overshoot.ToString($"F{Decimals}")%.
+                    Перерегулирование (\( \sigma \)) - это процентное отклонение максимального значения от
+                    установившегося значения.
+                    <br />
+                    \( \sigma \) = @_analysisResult.Overshoot.ToString(Format)%.
+                </MudText>
+                <MudText>
+                    <p style="overflow-x: auto;">@_analysisResult.Formulas.Overshoot</p>
+                    Где:
+                    <br />
+                    - \( y_{\text{макс}} \) — максимальное значение отклика системы.<br />
+                    - \( y_\text{уст} \) — установившееся значение.<br />
                 </MudText>
 
+                <MudText Class="my-2"
+                         Typo="Typo.h6">
+                    Установившееся значение
+                </MudText>
+                <MudDivider />
                 <MudText>
-                    Установившееся значение:
-                    h=@_analysisResult.Established.ToString($"F{Decimals}").
+                    Установившееся значение (\( y_\text{уст} \)) - это среднее значение сигнала после достижения
+                    установившегося состояния.
+                    <br />
+                    \( y_\text{уст} \) = @(_analysisResult.Established.ToString(Format)).
+                </MudText>
+                <MudText>
+                    <p style="overflow-x: auto;">@_analysisResult.Formulas.SteadyState</p>
+                    Где \( y_i \) — значения на конечной стадии отклика системы.
                 </MudText>
             </MudCardContent>
         </MudCard>
@@ -101,13 +149,13 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td>@_analysisResult.YMax.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.T1.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.Y1.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.T2.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.Y2.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.Overshoot.ToString($"F{Decimals}")</td>
-                        <td>@_analysisResult.Tps.ToString($"F{Decimals}")</td>
+                        <td>@_analysisResult.YMax.ToString(Format)</td>
+                        <td>@_analysisResult.T1.ToString(Format)</td>
+                        <td>@_analysisResult.Y1.ToString(Format)</td>
+                        <td>@_analysisResult.T2.ToString(Format)</td>
+                        <td>@_analysisResult.Y2.ToString(Format)</td>
+                        <td>@_analysisResult.Overshoot.ToString(Format)</td>
+                        <td>@_analysisResult.Tps.ToString(Format)</td>
                     </tr>
                     </tbody>
                 </MudSimpleTable>

@@ -17,18 +17,18 @@
                     <MudNumericField @bind-Value="Step"
                                      Culture="CultureInfo.InvariantCulture"
                                      DebounceInterval="500"
-                                     Format="F2"
+                                     Format="F3"
                                      FullWidth
                                      Label="Шаг"
                                      Max="1"
-                                     Min="0.01"
+                                     Min="0.001"
                                      Placeholder="Шаг интегрирования"
                                      Step=".01D"
                                      Variant="Variant.Outlined" />
 
                     <MudSlider @bind-Value="Step"
                                Max="1"
-                               Min="0.01"
+                               Min="0.001"
                                Step="0.01"
                                ValueLabel />
                 </MudStack>

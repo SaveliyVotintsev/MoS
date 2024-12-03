@@ -9,6 +9,11 @@
     }
 }
 
+function resetMath() {
+    MathJax.texReset();
+    MathJax.typeset();
+}
+
 let chart;
 
 function createChart(functionString, step, maxT) {
@@ -79,4 +84,4 @@ window.triggerFileDownload = (fileName, url) => {
     anchorElement.download = fileName ?? '';
     anchorElement.click();
     anchorElement.remove();
-}
+};
